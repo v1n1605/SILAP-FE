@@ -50,7 +50,7 @@ export default function App() {
   };
 
   return (
-    <div className="silap-scroll" style={{ minHeight: '100vh', background: '#eef3ec', fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif", color: '#1c2a21', WebkitFontSmoothing: 'antialiased' }}>
+    <div className="silap-scroll" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: '#eef3ec', fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif", color: '#1c2a21', WebkitFontSmoothing: 'antialiased' }}>
       {/* HEADER */}
       <header style={{ position: 'sticky', top: 0, zIndex: 40, background: 'rgba(255,255,255,.92)', backdropFilter: 'blur(12px)', borderBottom: '1px solid #e1eadf' }}>
         <div style={{ maxWidth: 1200, margin: '0 auto', padding: d.rs.headerPad, display: 'flex', alignItems: 'center', gap: 16 }}>
@@ -115,7 +115,7 @@ export default function App() {
         )}
       </header>
 
-      <main style={{ maxWidth: 1200, margin: '0 auto', padding: d.rs.mainPad }}>
+      <main style={{ flex: 1, maxWidth: 1200, margin: '0 auto', padding: d.rs.mainPad }}>
         {st.route === 'beranda' && <BerandaSection d={d} st={st} dispatch={dispatch} go={go} openPokja={openPokja} showToast={showToast} />}
         {st.route === 'pokja' && <PokjaOverviewSection d={d} go={go} />}
         {st.route === 'detail' && <PokjaDetailSection d={d} st={st} dispatch={dispatch} go={go} openPokja={openPokja} showToast={showToast} />}
