@@ -19,7 +19,7 @@ export interface PokjaDef {
 }
 
 export interface CalendarEvent {
-  id: number;
+  id: string | number;
   pokja: number;
   y: number;
   m: number;
@@ -29,7 +29,7 @@ export interface CalendarEvent {
 }
 
 export interface GalleryItem {
-  id: number;
+  id: string | number;
   pokja: number;
   caption: string;
   date: string;
@@ -37,7 +37,7 @@ export interface GalleryItem {
 }
 
 export interface FileItem {
-  id: number;
+  id: string | number;
   pokja: number;
   name: string;
   ext: string;
@@ -47,7 +47,7 @@ export interface FileItem {
 }
 
 export interface ReportItem {
-  id: number;
+  id: string | number;
   date: string;
   name: string;
   contact: string;
@@ -57,6 +57,7 @@ export interface ReportItem {
 }
 
 export interface AppState {
+  loading: boolean;
   currentUserId: string | null;
   w: number;
   menuOpen: boolean;
@@ -91,6 +92,7 @@ export interface AppState {
 }
 
 export type AppAction =
+  | { type: 'SET_LOADING'; payload: boolean }
   | { type: 'SET_W'; payload: number }
   | { type: 'SET_MENU'; payload: boolean }
   | { type: 'TOGGLE_MENU' }
@@ -106,13 +108,13 @@ export type AppAction =
   | { type: 'LOGOUT' }
   | { type: 'SET_EVENT_MODAL'; payload: AppState['eventModal'] }
   | { type: 'ADD_EVENT'; payload: CalendarEvent }
-  | { type: 'DELETE_EVENT'; payload: number }
+  | { type: 'DELETE_EVENT'; payload: string | number }
   | { type: 'SET_GAL_MODAL'; payload: AppState['galModal'] }
   | { type: 'ADD_GALLERY'; payload: GalleryItem }
-  | { type: 'DELETE_GALLERY'; payload: number }
+  | { type: 'DELETE_GALLERY'; payload: string | number }
   | { type: 'SET_FILE_MODAL'; payload: AppState['fileModal'] }
   | { type: 'ADD_FILE'; payload: FileItem }
-  | { type: 'DELETE_FILE'; payload: number }
+  | { type: 'DELETE_FILE'; payload: string | number }
   | { type: 'SET_AVATAR_MODAL'; payload: boolean }
   | { type: 'SET_AVATAR_PREVIEW'; payload: string | null }
   | { type: 'SAVE_AVATAR'; payload: string }
@@ -126,6 +128,8 @@ export type AppAction =
   | { type: 'SET_GAL_FILTER'; payload: number | 'all' }
   | { type: 'SET_RF'; payload: Partial<AppState['rf']> }
   | { type: 'ADD_REPORT'; payload: ReportItem }
-  | { type: 'UPDATE_REPORT_STATUS'; payload: number }
+  | { type: 'UPDATE_REPORT_STATUS'; payload: string | number }
   | { type: 'SET_NEXT_ID'; payload: number }
+  | { type: 'SET_INITIAL_DATA'; payload: { users: User[]; events: CalendarEvent[]; gallery: GalleryItem[]; files: FileItem[]; reports: ReportItem[] } }
   | { type: 'SET_TOAST'; payload: string | null };
+

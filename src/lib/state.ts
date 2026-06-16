@@ -50,6 +50,7 @@ export const initialReports: ReportItem[] = [
 ];
 
 export interface AppState {
+  loading: boolean;
   currentUserId: string | null;
   w: number;
   menuOpen: boolean;
@@ -80,18 +81,20 @@ export interface AppState {
 }
 
 export const initialState: AppState = {
+  loading: true,
   currentUserId: null, w: 1200, menuOpen: false,
-  users: initialUsers, route: 'beranda', activePokja: 1, tab: 'kalender', heroIdx: 0,
+  users: [], route: 'beranda', activePokja: 1, tab: 'kalender', heroIdx: 0,
   calY: 2026, calM: 5, showLogin: false,
   loginForm: { nik: '', password: '', error: '', showDemo: false },
   eventModal: null, galModal: null, fileModal: null,
   avatarModal: false, avatarPreview: null, userModal: null, confirmDelete: null,
   galFilter: 'all',
   rf: { name: '', contact: '', category: 'Pokja IV — Kesehatan & Lingkungan', desc: '' },
-  toast: null, nextId: 5000, events: initialEvents, gallery: initialGallery, files: initialFiles, reports: initialReports,
+  toast: null, nextId: 5000, events: [], gallery: [], files: [], reports: [],
 };
 
 export type AppAction =
+  | { type: 'SET_LOADING'; payload: boolean }
   | { type: 'SET_W'; payload: number }
   | { type: 'TOGGLE_MENU' }
   | { type: 'SET_ROUTE'; payload: string }
@@ -106,13 +109,13 @@ export type AppAction =
   | { type: 'LOGOUT' }
   | { type: 'SET_EVENT_MODAL'; payload: AppState['eventModal'] }
   | { type: 'ADD_EVENT'; payload: CalendarEvent }
-  | { type: 'DELETE_EVENT'; payload: number }
+  | { type: 'DELETE_EVENT'; payload: string | number }
   | { type: 'SET_GAL_MODAL'; payload: AppState['galModal'] }
   | { type: 'ADD_GALLERY'; payload: GalleryItem }
-  | { type: 'DELETE_GALLERY'; payload: number }
+  | { type: 'DELETE_GALLERY'; payload: string | number }
   | { type: 'SET_FILE_MODAL'; payload: AppState['fileModal'] }
   | { type: 'ADD_FILE'; payload: FileItem }
-  | { type: 'DELETE_FILE'; payload: number }
+  | { type: 'DELETE_FILE'; payload: string | number }
   | { type: 'SET_AVATAR_MODAL'; payload: boolean }
   | { type: 'SET_AVATAR_PREVIEW'; payload: string | null }
   | { type: 'SAVE_AVATAR'; payload: string }
@@ -125,11 +128,13 @@ export type AppAction =
   | { type: 'SET_GAL_FILTER'; payload: number | 'all' }
   | { type: 'SET_RF'; payload: Partial<{ name: string; contact: string; category: string; desc: string }> }
   | { type: 'ADD_REPORT'; payload: ReportItem }
-  | { type: 'UPDATE_REPORT_STATUS'; payload: number }
+  | { type: 'UPDATE_REPORT_STATUS'; payload: string | number }
+  | { type: 'SET_INITIAL_DATA'; payload: { users: User[]; events: CalendarEvent[]; gallery: GalleryItem[]; files: FileItem[]; reports: ReportItem[] } }
   | { type: 'SET_TOAST'; payload: string | null };
 
 export function reducer(state: AppState, action: AppAction): AppState {
   switch (action.type) {
+    case 'SET_LOADING': return { ...state, loading: action.payload };
     case 'SET_W': return { ...state, w: action.payload };
     case 'TOGGLE_MENU': return { ...state, menuOpen: !state.menuOpen };
     case 'SET_ROUTE': return { ...state, route: action.payload, showLogin: false, menuOpen: false };
@@ -164,6 +169,7 @@ export function reducer(state: AppState, action: AppAction): AppState {
     case 'SET_RF': return { ...state, rf: { ...state.rf, ...action.payload } };
     case 'ADD_REPORT': return { ...state, reports: [action.payload, ...state.reports], nextId: state.nextId + 1, rf: { ...state.rf, name: '', contact: '', desc: '' } };
     case 'UPDATE_REPORT_STATUS': return { ...state, reports: state.reports.map(r => r.id === action.payload ? { ...r, status: STATUS_NEXT[r.status] || r.status } : r) };
+    case 'SET_INITIAL_DATA': return { ...state, users: action.payload.users, events: action.payload.events, gallery: action.payload.gallery, files: action.payload.files, reports: action.payload.reports };
     case 'SET_TOAST': return { ...state, toast: action.payload };
     default: return state;
   }

@@ -5,6 +5,7 @@ import { reducer, initialState, AppState, AppAction } from '@/lib/state';
 import { computeDerived } from '@/lib/derived';
 import { BerandaSection, PokjaOverviewSection, PokjaDetailSection, GaleriSection, LaporanSection, DashboardSection } from './Sections';
 import { LoginModal, EventModal, GalModal, FileUploadModal, AvatarModal, UserModal, ConfirmDeleteModal } from './Modals';
+import { supabase } from '@/lib/supabase';
 
 export default function App() {
   const [st, dispatch] = useReducer<AppState, [AppAction]>(reducer, initialState);
@@ -26,6 +27,262 @@ export default function App() {
     window.scrollTo(0, 0);
   }, []);
 
+  // Fetch initial data from Supabase
+  useEffect(() => {
+    async function loadData() {
+      try {
+        const [
+          { data: users, error: errUsers },
+          { data: events, error: errEvents },
+          { data: gallery, error: errGallery },
+          { data: files, error: errFiles },
+          { data: reports, error: errReports },
+        ] = await Promise.all([
+          supabase.from('users').select('*'),
+          supabase.from('events').select('*'),
+          supabase.from('gallery').select('*'),
+          supabase.from('files').select('*'),
+          supabase.from('reports').select('*'),
+        ]);
+
+        if (errUsers || errEvents || errGallery || errFiles || errReports) {
+          console.error({ errUsers, errEvents, errGallery, errFiles, errReports });
+          showToast('Koneksi ke Supabase gagal atau tabel tidak ditemukan');
+        }
+
+        // Map events from DB format (year, month, day) to frontend format (y, m, d)
+        const mappedEvents = (events || []).map((e: any) => ({
+          id: e.id,
+          pokja: e.pokja,
+          y: e.year,
+          m: e.month,
+          d: e.day,
+          title: e.title,
+          time: e.time,
+        }));
+
+        dispatch({
+          type: 'SET_INITIAL_DATA',
+          payload: {
+            users: users || [],
+            events: mappedEvents,
+            gallery: gallery || [],
+            files: files || [],
+            reports: reports || [],
+          },
+        });
+      } catch (err) {
+        console.error('Failed to load data:', err);
+        showToast('Terjadi kesalahan saat menghubungkan ke database');
+      } finally {
+        dispatch({ type: 'SET_LOADING', payload: false });
+      }
+    }
+    loadData();
+  }, [dispatch, showToast]);
+
+  const asyncDispatch = useCallback((action: AppAction) => {
+    (async () => {
+      switch (action.type) {
+        case 'ADD_EVENT': {
+          const { error, data } = await supabase
+            .from('events')
+            .insert({
+              pokja: action.payload.pokja,
+              year: action.payload.y,
+              month: action.payload.m,
+              day: action.payload.d,
+              title: action.payload.title,
+              time: action.payload.time,
+            })
+            .select()
+            .single();
+
+          if (error) {
+            showToast('Gagal menambahkan kegiatan: ' + error.message);
+            return;
+          }
+          dispatch({ type: 'ADD_EVENT', payload: { ...action.payload, id: data.id } });
+          break;
+        }
+        case 'DELETE_EVENT': {
+          const { error } = await supabase.from('events').delete().eq('id', action.payload);
+          if (error) {
+            showToast('Gagal menghapus kegiatan: ' + error.message);
+            return;
+          }
+          dispatch({ type: 'DELETE_EVENT', payload: action.payload });
+          break;
+        }
+        case 'ADD_GALLERY': {
+          const { error, data } = await supabase
+            .from('gallery')
+            .insert({
+              pokja: action.payload.pokja,
+              caption: action.payload.caption,
+              date: action.payload.date,
+              tag: action.payload.tag,
+            })
+            .select()
+            .single();
+
+          if (error) {
+            showToast('Gagal mengunggah foto: ' + error.message);
+            return;
+          }
+          dispatch({ type: 'ADD_GALLERY', payload: { ...action.payload, id: data.id } });
+          break;
+        }
+        case 'DELETE_GALLERY': {
+          const { error } = await supabase.from('gallery').delete().eq('id', action.payload);
+          if (error) {
+            showToast('Gagal menghapus foto: ' + error.message);
+            return;
+          }
+          dispatch({ type: 'DELETE_GALLERY', payload: action.payload });
+          break;
+        }
+        case 'ADD_FILE': {
+          const { error, data } = await supabase
+            .from('files')
+            .insert({
+              pokja: action.payload.pokja,
+              name: action.payload.name,
+              ext: action.payload.ext,
+              size: action.payload.size,
+              by: action.payload.by,
+              date: action.payload.date,
+            })
+            .select()
+            .single();
+
+          if (error) {
+            showToast('Gagal mengunggah berkas: ' + error.message);
+            return;
+          }
+          dispatch({ type: 'ADD_FILE', payload: { ...action.payload, id: data.id } });
+          break;
+        }
+        case 'DELETE_FILE': {
+          const { error } = await supabase.from('files').delete().eq('id', action.payload);
+          if (error) {
+            showToast('Gagal menghapus berkas: ' + error.message);
+            return;
+          }
+          dispatch({ type: 'DELETE_FILE', payload: action.payload });
+          break;
+        }
+        case 'ADD_REPORT': {
+          const { error, data } = await supabase
+            .from('reports')
+            .insert({
+              date: action.payload.date,
+              name: action.payload.name,
+              contact: action.payload.contact,
+              pokja: action.payload.pokja,
+              desc: action.payload.desc,
+              status: action.payload.status,
+            })
+            .select()
+            .single();
+
+          if (error) {
+            showToast('Gagal mengirim laporan: ' + error.message);
+            return;
+          }
+          dispatch({ type: 'ADD_REPORT', payload: { ...action.payload, id: data.id } });
+          break;
+        }
+        case 'UPDATE_REPORT_STATUS': {
+          const report = st.reports.find(r => r.id === action.payload);
+          if (!report) return;
+          const STATUS_NEXT: Record<string, string> = {
+            'Baru': 'Diproses',
+            'Diproses': 'Selesai',
+            'Selesai': 'Baru'
+          };
+          const nextStatus = STATUS_NEXT[report.status] || 'Baru';
+          const { error } = await supabase
+            .from('reports')
+            .update({ status: nextStatus })
+            .eq('id', action.payload);
+
+          if (error) {
+            showToast('Gagal mengubah status laporan: ' + error.message);
+            return;
+          }
+          dispatch({ type: 'UPDATE_REPORT_STATUS', payload: action.payload });
+          break;
+        }
+        case 'ADD_USER': {
+          const { error, data } = await supabase
+            .from('users')
+            .insert({
+              nik: action.payload.nik,
+              password: action.payload.password,
+              role: action.payload.role,
+              name: action.payload.name,
+              pokja: action.payload.pokja,
+              avatar: action.payload.avatar,
+            })
+            .select()
+            .single();
+
+          if (error) {
+            showToast('Gagal membuat akun: ' + error.message);
+            return;
+          }
+          dispatch({ type: 'ADD_USER', payload: { ...action.payload, id: data.id } });
+          break;
+        }
+        case 'UPDATE_USER': {
+          const { error } = await supabase
+            .from('users')
+            .update({
+              nik: action.payload.nik,
+              password: action.payload.password,
+              role: action.payload.role,
+              name: action.payload.name,
+              pokja: action.payload.pokja,
+              avatar: action.payload.avatar,
+            })
+            .eq('id', action.payload.id);
+
+          if (error) {
+            showToast('Gagal memperbarui akun: ' + error.message);
+            return;
+          }
+          dispatch({ type: 'UPDATE_USER', payload: action.payload });
+          break;
+        }
+        case 'DELETE_USER': {
+          const { error } = await supabase.from('users').delete().eq('id', action.payload);
+          if (error) {
+            showToast('Gagal menghapus akun: ' + error.message);
+            return;
+          }
+          dispatch({ type: 'DELETE_USER', payload: action.payload });
+          break;
+        }
+        case 'SAVE_AVATAR': {
+          const { error } = await supabase
+            .from('users')
+            .update({ avatar: action.payload })
+            .eq('id', st.currentUserId!);
+
+          if (error) {
+            showToast('Gagal menyimpan foto profil: ' + error.message);
+            return;
+          }
+          dispatch({ type: 'SAVE_AVATAR', payload: action.payload });
+          break;
+        }
+        default:
+          dispatch(action);
+      }
+    })();
+  }, [st.reports, st.currentUserId, showToast]);
+
   useEffect(() => {
     const onResize = () => dispatch({ type: 'SET_W', payload: window.innerWidth });
     onResize();
@@ -41,13 +298,33 @@ export default function App() {
     };
   }, [st.gallery.length, st.heroIdx]);
 
-  const d = computeDerived(st, go, openPokja, dispatch);
+  const d = computeDerived(st, go, openPokja, asyncDispatch);
 
   const handleLogout = () => {
     showToast('Anda telah keluar');
     dispatch({ type: 'LOGOUT' });
     window.scrollTo(0, 0);
   };
+
+  if (st.loading) {
+    return (
+      <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#eef3ec', fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif", color: '#1c2a21' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 20, background: 'rgba(255, 255, 255, 0.8)', padding: '40px 60px', borderRadius: 24, boxShadow: '0 20px 50px -15px rgba(22, 51, 31, 0.15)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255, 255, 255, 0.5)' }}>
+          <div style={{ width: 50, height: 50, borderRadius: '50%', border: '4px solid #e1eadf', borderTop: '4px solid #1f7e44', animation: 'silapSpin 1s linear infinite' }}></div>
+          <div style={{ textAlign: 'center' }}>
+            <h1 style={{ fontSize: 24, fontWeight: 800, color: '#16331f', margin: '0 0 4px', letterSpacing: '-0.02em' }}>SILAP</h1>
+            <p style={{ fontSize: 13, fontWeight: 600, color: '#6a8273', margin: 0 }}>Menghubungkan ke database...</p>
+          </div>
+        </div>
+        <style>{`
+          @keyframes silapSpin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+        `}</style>
+      </div>
+    );
+  }
 
   return (
     <div className="silap-scroll" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: '#eef3ec', fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif", color: '#1c2a21', WebkitFontSmoothing: 'antialiased' }}>
@@ -116,12 +393,12 @@ export default function App() {
       </header>
 
       <main style={{ flex: 1, maxWidth: 1200, margin: '0 auto', padding: d.rs.mainPad }}>
-        {st.route === 'beranda' && <BerandaSection d={d} st={st} dispatch={dispatch} go={go} openPokja={openPokja} showToast={showToast} />}
+        {st.route === 'beranda' && <BerandaSection d={d} st={st} dispatch={asyncDispatch} go={go} openPokja={openPokja} showToast={showToast} />}
         {st.route === 'pokja' && <PokjaOverviewSection d={d} go={go} />}
-        {st.route === 'detail' && <PokjaDetailSection d={d} st={st} dispatch={dispatch} go={go} openPokja={openPokja} showToast={showToast} />}
+        {st.route === 'detail' && <PokjaDetailSection d={d} st={st} dispatch={asyncDispatch} go={go} openPokja={openPokja} showToast={showToast} />}
         {st.route === 'galeri' && <GaleriSection d={d} />}
-        {st.route === 'laporan' && <LaporanSection d={d} st={st} dispatch={dispatch} go={go} openPokja={openPokja} showToast={showToast} />}
-        {st.route === 'dashboard' && d.u && <DashboardSection d={d} st={st} dispatch={dispatch} go={go} openPokja={openPokja} showToast={showToast} />}
+        {st.route === 'laporan' && <LaporanSection d={d} st={st} dispatch={asyncDispatch} go={go} openPokja={openPokja} showToast={showToast} />}
+        {st.route === 'dashboard' && d.u && <DashboardSection d={d} st={st} dispatch={asyncDispatch} go={go} openPokja={openPokja} showToast={showToast} />}
       </main>
 
       {/* FOOTER */}
@@ -138,13 +415,13 @@ export default function App() {
       </footer>
 
       {/* MODALS */}
-      {st.showLogin && <LoginModal st={st} d={d} dispatch={dispatch} showToast={showToast} />}
-      {st.eventModal && <EventModal st={st} d={d} dispatch={dispatch} showToast={showToast} />}
-      {st.galModal && <GalModal st={st} d={d} dispatch={dispatch} showToast={showToast} />}
-      {st.fileModal && <FileUploadModal st={st} d={d} dispatch={dispatch} showToast={showToast} />}
-      {st.avatarModal && <AvatarModal st={st} d={d} dispatch={dispatch} showToast={showToast} />}
-      {st.userModal && <UserModal st={st} d={d} dispatch={dispatch} showToast={showToast} />}
-      {st.confirmDelete && <ConfirmDeleteModal st={st} d={d} dispatch={dispatch} showToast={showToast} />}
+      {st.showLogin && <LoginModal st={st} d={d} dispatch={asyncDispatch} showToast={showToast} />}
+      {st.eventModal && <EventModal st={st} d={d} dispatch={asyncDispatch} showToast={showToast} />}
+      {st.galModal && <GalModal st={st} d={d} dispatch={asyncDispatch} showToast={showToast} />}
+      {st.fileModal && <FileUploadModal st={st} d={d} dispatch={asyncDispatch} showToast={showToast} />}
+      {st.avatarModal && <AvatarModal st={st} d={d} dispatch={asyncDispatch} showToast={showToast} />}
+      {st.userModal && <UserModal st={st} d={d} dispatch={asyncDispatch} showToast={showToast} />}
+      {st.confirmDelete && <ConfirmDeleteModal st={st} d={d} dispatch={asyncDispatch} showToast={showToast} />}
 
       {/* TOAST */}
       {st.toast && (
