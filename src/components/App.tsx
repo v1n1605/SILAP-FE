@@ -423,7 +423,6 @@ export default function App() {
     return () => {
       window.removeEventListener('resize', onResize);
       clearInterval(hero);
-      clearTimeout(toastTimer.current);
     };
   }, [st.gallery.length, st.heroIdx]);
 
@@ -468,7 +467,7 @@ export default function App() {
     <div className="silap-scroll" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: '#eef3ec', fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif", color: '#1c2a21', WebkitFontSmoothing: 'antialiased' }}>
       {/* HEADER */}
       <header style={{ position: 'sticky', top: 0, zIndex: 40, background: 'rgba(255,255,255,.92)', backdropFilter: 'blur(12px)', borderBottom: '1px solid #e1eadf' }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto', padding: d.rs.headerPad, display: 'flex', alignItems: 'center', gap: 16 }}>
+        <div style={{ maxWidth: '90%', margin: '0 auto', padding: d.rs.headerPad, display: 'flex', alignItems: 'center', gap: 16 }}>
           <div onClick={() => go('beranda')} style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', flexShrink: 0 }}>
             <img src="./Logo1.png" alt="Logo Desa Bunutwetan" style={{ width: d.rs.logoSize, height: d.rs.logoSize, objectFit: 'contain' }} />
             <div style={{ lineHeight: 1.05 }}>
@@ -496,8 +495,8 @@ export default function App() {
               {d.u && (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 9, background: '#fff', border: '1px solid #e1eadf', padding: '4px 5px 4px 12px', borderRadius: 99 }}>
                   <div style={{ textAlign: 'right', lineHeight: 1.15 }}><div style={{ fontSize: 13, fontWeight: 700 }}>{d.userVals.name}</div><div style={{ fontSize: '10.5px', fontWeight: 600, color: d.userVals.chipColor }}>{d.userVals.roleLabel}</div></div>
-                  <div onClick={() => dispatch({ type: 'SET_AVATAR_MODAL', payload: true })} title="Edit foto profil" style={{ cursor: 'pointer', width: 32, height: 32, borderRadius: '50%', overflow: 'hidden', flexShrink: 0, border: `2px solid ${d.userVals.chipColor}` }}><div style={d.userVals.avatarStyleSm}>{d.userVals.avatarInitialSm}</div></div>
-                  <button onClick={handleLogout} title="Keluar" style={{ border: 'none', cursor: 'pointer', background: '#f0f6ee', color: '#5b7264', width: 32, height: 32, borderRadius: '50%', fontSize: 15 }}>⏻</button>
+                  <div onClick={() => dispatch({ type: 'SET_AVATAR_MODAL', payload: true })} title="Edit foto profil" style={{ cursor: 'pointer', width: 32, height: 32, borderRadius: '50%', overflow: 'hidden', flexShrink: 0, border: `2px solid ${d.userVals.chipColor}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><div style={d.userVals.avatarStyleSm}>{d.userVals.avatarInitialSm}</div></div>
+                  <button onClick={handleLogout} title="Keluar" style={{ border: 'none', cursor: 'pointer', background: '#f0f6ee', color: '#5b7264', width: 32, height: 32, borderRadius: '50%', fontSize: 15, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>⏻</button>
                 </div>
               )}
             </div>
@@ -505,7 +504,7 @@ export default function App() {
 
           {d.isMob && (
             <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8 }}>
-              {d.u && <div onClick={() => dispatch({ type: 'SET_AVATAR_MODAL', payload: true })} style={{ cursor: 'pointer', width: 34, height: 34, borderRadius: '50%', overflow: 'hidden', border: `2px solid ${d.userVals.chipColor}`, flexShrink: 0 }}><div style={d.userVals.avatarStyleSm}>{d.userVals.avatarInitialSm}</div></div>}
+              {d.u && <div onClick={() => dispatch({ type: 'SET_AVATAR_MODAL', payload: true })} style={{ cursor: 'pointer', width: 34, height: 34, borderRadius: '50%', overflow: 'hidden', border: `2px solid ${d.userVals.chipColor}`, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><div style={d.userVals.avatarStyleSm}>{d.userVals.avatarInitialSm}</div></div>}
               {!d.u && <button onClick={() => dispatch({ type: 'SET_SHOW_LOGIN', payload: true })} style={{ border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: 13, fontWeight: 700, padding: '8px 14px', borderRadius: 10, background: '#1f7e44', color: '#fff' }}>Masuk</button>}
               <button onClick={() => dispatch({ type: 'TOGGLE_MENU' })} style={{ border: '1px solid #e1eadf', background: '#fff', cursor: 'pointer', width: 38, height: 38, borderRadius: 11, fontSize: 18, color: '#5d7263', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{st.menuOpen ? '✕' : '☰'}</button>
             </div>
@@ -520,7 +519,7 @@ export default function App() {
             {d.u && (
               <>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: '#f4f9f3', borderRadius: 12, padding: '12px 14px', marginTop: 6, marginBottom: 8 }}>
-                  <div style={{ width: 38, height: 38, borderRadius: '50%', overflow: 'hidden', flexShrink: 0, border: `2px solid ${d.userVals.chipColor}` }}><div style={d.userVals.avatarStyleSm}>{d.userVals.avatarInitialSm}</div></div>
+                  <div style={{ width: 38, height: 38, borderRadius: '50%', overflow: 'hidden', flexShrink: 0, border: `2px solid ${d.userVals.chipColor}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><div style={d.userVals.avatarStyleSm}>{d.userVals.avatarInitialSm}</div></div>
                   <div><div style={{ fontSize: 14, fontWeight: 700, color: '#1a3322' }}>{d.userVals.name}</div><div style={{ fontSize: 12, color: d.userVals.chipColor, fontWeight: 600 }}>{d.userVals.roleLabel}</div></div>
                 </div>
                 <button onClick={handleLogout} style={{ width: '100%', border: '1px solid #e1eadf', cursor: 'pointer', fontFamily: 'inherit', fontSize: 14, fontWeight: 700, padding: 11, borderRadius: 11, background: '#fff', color: '#c0436c' }}>Keluar</button>
@@ -530,7 +529,7 @@ export default function App() {
         )}
       </header>
 
-      <main style={{ flex: 1, maxWidth: 1200, margin: '0 auto', padding: d.rs.mainPad }}>
+      <main style={{ flex: 1, maxWidth: '90%', margin: '0 auto', padding: d.rs.mainPad }}>
         {st.route === 'beranda' && <BerandaSection d={d} st={st} dispatch={asyncDispatch} go={go} openPokja={openPokja} showToast={showToast} />}
         {st.route === 'pokja' && <PokjaOverviewSection d={d} go={go} />}
         {st.route === 'detail' && <PokjaDetailSection d={d} st={st} dispatch={asyncDispatch} go={go} openPokja={openPokja} showToast={showToast} />}
@@ -541,7 +540,7 @@ export default function App() {
 
       {/* FOOTER */}
       <footer style={{ borderTop: '1px solid #e1eadf', background: '#fff' }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '22px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
+        <div style={{ maxWidth: '90%', margin: '0 auto', padding: '22px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <img src="./Logo1.png" alt="Logo Desa Bunutwetan" style={{ width: 36, height: 36, objectFit: 'contain' }} />
             <div style={{ fontSize: '12.5px', color: '#69806f' }}>

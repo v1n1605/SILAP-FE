@@ -43,10 +43,10 @@ export function computeDerived(st: AppState, go: (r: string) => void, openPokja:
   const isDesktop = !isMob;
 
   const rs: Record<string, any> = {
-    headerPad: isMob ? '10px 16px' : '12px 24px',
+    headerPad: isMob ? '10px 16px' : '12px 20px',
     logoSize: isMob ? '36px' : '42px',
     logoFont: isMob ? '17px' : '19px',
-    mainPad: isMob ? '0 16px 56px' : '0 24px 80px',
+    mainPad: isMob ? '0 16px 56px' : '0 20px 80px',
     hero: isMob ? { display: 'flex', flexDirection: 'column-reverse' as const, gap: '20px', padding: '24px 0 16px' } : { display: 'grid', gridTemplateColumns: '1.05fr .95fr', gap: '40px', alignItems: 'center', padding: '54px 0 40px' },
     heroImgH: isMob ? '220px' : '330px',
     heroTagMb: isMob ? '14px' : '22px',
