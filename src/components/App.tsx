@@ -1,9 +1,9 @@
 'use client';
 
 import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
-import { reducer, initialState, AppState, AppAction } from '@/lib/state';
+import { reducer, initialState, AppState, AppAction, initialBlogPosts } from '@/lib/state';
 import { computeDerived } from '@/lib/derived';
-import { BerandaSection, PokjaOverviewSection, PokjaDetailSection, GaleriSection, LaporanSection, DashboardSection } from './Sections';
+import { BerandaSection, PokjaOverviewSection, PokjaDetailSection, GaleriSection, LaporanSection, DashboardSection, PKKMembersSection, InovasiSection } from './Sections';
 import { LoginModal, EventModal, GalModal, FileUploadModal, AvatarModal, UserModal, ConfirmDeleteModal } from './Modals';
 import { supabase } from '@/lib/supabase';
 
@@ -68,6 +68,9 @@ export default function App() {
           time: e.time,
         }));
 
+        let pkkMembersData: any[] = [];
+        try { const { data } = await supabase.from('pkk_members').select('*'); pkkMembersData = data || []; } catch (_) {}
+
         dispatch({
           type: 'SET_INITIAL_DATA',
           payload: {
@@ -76,6 +79,8 @@ export default function App() {
             gallery: gallery || [],
             files: files || [],
             reports: reports || [],
+            pkkMembers: pkkMembersData,
+            blogPosts: initialBlogPosts,
           },
         });
 
@@ -135,6 +140,8 @@ export default function App() {
             gallery: gallery || [],
             files: files || [],
             reports: reports || [],
+            pkkMembers: [],
+            blogPosts: [],
           },
         });
       } catch (err) {
@@ -467,9 +474,10 @@ export default function App() {
     <div className="silap-scroll" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: '#eef3ec', fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif", color: '#1c2a21', WebkitFontSmoothing: 'antialiased' }}>
       {/* HEADER */}
       <header style={{ position: 'sticky', top: 0, zIndex: 40, background: 'rgba(255,255,255,.92)', backdropFilter: 'blur(12px)', borderBottom: '1px solid #e1eadf' }}>
-        <div style={{ maxWidth: '90%', margin: '0 auto', padding: d.rs.headerPad, display: 'flex', alignItems: 'center', gap: 16 }}>
+        <div style={{ maxWidth: '95%', margin: '0 auto', padding: d.rs.headerPad, display: 'flex', alignItems: 'center', gap: 16 }}>
           <div onClick={() => go('beranda')} style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', flexShrink: 0 }}>
             <img src="./Logo1.png" alt="Logo Desa Bunutwetan" style={{ width: d.rs.logoSize, height: d.rs.logoSize, objectFit: 'contain' }} />
+            <img src="./pkk.png" alt="Logo PKK" style={{ width: d.rs.logoSize, height: d.rs.logoSize, objectFit: 'contain' }} />
             <div style={{ lineHeight: 1.05 }}>
               <div style={{ fontSize: d.rs.logoFont, fontWeight: 800, letterSpacing: '-.02em', color: '#16331f' }}>SILAP</div>
               {d.isDesktop && <div style={{ fontSize: '10.5px', fontWeight: 600, color: '#6a8273', letterSpacing: '.02em' }}>Sistem Informasi Layanan Program Desa</div>}
@@ -529,18 +537,20 @@ export default function App() {
         )}
       </header>
 
-      <main style={{ flex: 1, maxWidth: '90%', margin: '0 auto', padding: d.rs.mainPad }}>
+      <main style={{ flex: 1, width: '100%', maxWidth: '95%', margin: '0 auto', padding: d.rs.mainPad }}>
         {st.route === 'beranda' && <BerandaSection d={d} st={st} dispatch={asyncDispatch} go={go} openPokja={openPokja} showToast={showToast} />}
         {st.route === 'pokja' && <PokjaOverviewSection d={d} go={go} />}
         {st.route === 'detail' && <PokjaDetailSection d={d} st={st} dispatch={asyncDispatch} go={go} openPokja={openPokja} showToast={showToast} />}
         {st.route === 'galeri' && <GaleriSection d={d} />}
+        {st.route === 'inovasi' && <InovasiSection d={d} />}
         {st.route === 'laporan' && <LaporanSection d={d} st={st} dispatch={asyncDispatch} go={go} openPokja={openPokja} showToast={showToast} />}
         {st.route === 'dashboard' && d.u && <DashboardSection d={d} st={st} dispatch={asyncDispatch} go={go} openPokja={openPokja} showToast={showToast} />}
+        {st.route === 'anggota-pkk' && d.u && d.u.role === 'admin' && <PKKMembersSection d={d} st={st} dispatch={asyncDispatch} go={go} openPokja={openPokja} showToast={showToast} />}
       </main>
 
       {/* FOOTER */}
       <footer style={{ borderTop: '1px solid #e1eadf', background: '#fff' }}>
-        <div style={{ maxWidth: '90%', margin: '0 auto', padding: '22px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
+        <div style={{ maxWidth: '95%', margin: '0 auto', padding: '22px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <img src="./Logo1.png" alt="Logo Desa Bunutwetan" style={{ width: 36, height: 36, objectFit: 'contain' }} />
             <div style={{ fontSize: '12.5px', color: '#69806f' }}>

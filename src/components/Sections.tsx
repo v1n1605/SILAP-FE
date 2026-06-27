@@ -2,7 +2,8 @@
 
 import { DerivedData } from '@/lib/derived';
 import { AppState, AppAction } from '@/lib/state';
-import { Dispatch } from 'react';
+import { MONTH_NAMES_SHORT, STATUS } from '@/lib/constants';
+import { Dispatch, Fragment } from 'react';
 
 interface Props {
   st: AppState;
@@ -141,6 +142,29 @@ export function PokjaDetailSection({ d, st, dispatch, go, showToast }: Props) {
           {!d.canEditActive && <span style={{ fontSize: 12, fontWeight: 600, color: '#86766a', background: '#f3ede5', padding: '6px 12px', borderRadius: 99 }}>🔒 {d.rs.readLabel}</span>}
         </div>
       </div>
+      {st.tab === 'profil' && (
+        <div style={{ background: '#fff', border: '1px solid #e3ebe1', borderRadius: 18, padding: 24 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 20 }}>
+            <div style={{ width: 64, height: 64, borderRadius: 18, background: d.active.accent, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 24, flexShrink: 0 }}>{d.active.rom}</div>
+            <div>
+              <div style={{ fontSize: 11, fontWeight: 700, color: '#9aa99e', letterSpacing: '.05em', textTransform: 'uppercase', marginBottom: 2 }}>{d.active.name}</div>
+              <div style={{ fontSize: 20, fontWeight: 800, color: '#14301d', lineHeight: 1.2 }}>{d.active.title}</div>
+            </div>
+          </div>
+          <p style={{ fontSize: 14, color: '#5d7263', lineHeight: 1.7, marginBottom: 24 }}>Deskripsi profil {d.active.name} akan ditampilkan di sini. Jelaskan cakupan kegiatan, sasaran, dan program kerja pokja ini.</p>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+            {['Ketua', 'Sekretaris', 'Bendahara', 'Anggota'].map((r, i) => (
+              <div key={i} style={{ background: '#f4f9f3', borderRadius: 12, padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{ width: 38, height: 38, borderRadius: '50%', background: d.active.tint, color: d.active.accent, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 15, flexShrink: 0 }}>{r[0]}</div>
+                <div>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: '#22382b' }}>Nama {r}</div>
+                  <div style={{ fontSize: 11, color: '#88a08e' }}>{r} {d.active.name}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
       {st.tab === 'kalender' && (
         <div style={{ background: '#fff', border: '1px solid #e3ebe1', borderRadius: 18, padding: d.rs.calPad }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16, flexWrap: 'wrap', gap: 8 }}>
@@ -282,32 +306,60 @@ export function LaporanSection({ d, st, dispatch, showToast }: Props) {
           <button onClick={() => {
             if (!st.rf.name.trim() || !st.rf.desc.trim()) { showToast('Lengkapi nama & uraian laporan'); return; }
             const pk = st.rf.category.split(' — ')[0];
-            dispatch({ type: 'ADD_REPORT', payload: { id: st.nextId, date: '12 Jun 2026', name: st.rf.name.trim(), contact: st.rf.contact.trim() || '—', pokja: pk, desc: st.rf.desc.trim(), status: 'Baru' } });
+            const now = new Date(); const todayStr = `${now.getDate()} ${MONTH_NAMES_SHORT[now.getMonth()]} ${now.getFullYear()}`;
+            dispatch({ type: 'ADD_REPORT', payload: { id: st.nextId, date: todayStr, name: st.rf.name.trim(), contact: st.rf.contact.trim() || '—', pokja: pk, desc: st.rf.desc.trim(), status: 'Baru' } });
             showToast('Laporan terkirim, terima kasih!');
           }} style={{ width: '100%', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: '14.5px', fontWeight: 700, padding: 13, borderRadius: 12, background: '#1f7e44', color: '#fff' }}>Kirim Laporan</button>
         </div>
         <div style={{ background: '#fff', border: '1px solid #e3ebe1', borderRadius: 18, padding: 18, overflow: 'hidden' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14, flexWrap: 'wrap', gap: 10 }}>
-            <div><div style={{ fontSize: 15, fontWeight: 800, color: '#16331f' }}>Rekap Laporan Masuk</div><div style={{ fontSize: '12.5px', color: '#7d9385' }}>{st.reports.length} laporan</div></div>
-            <button onClick={handleExportExcel} style={{ border: '1px solid #1f7e44', cursor: 'pointer', fontFamily: 'inherit', fontSize: 13, fontWeight: 700, color: '#1f7e44', background: '#eaf6ed', padding: '9px 16px', borderRadius: 10, display: 'flex', alignItems: 'center', gap: 7, whiteSpace: 'nowrap' }}><span>▦</span> Export Excel</button>
-          </div>
-          <div className="silap-scroll" style={{ overflowX: 'auto', border: '1px solid #e8efe6', borderRadius: 11 }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12.5px', minWidth: 580 }}>
-              <thead><tr style={{ background: '#1f7e44', color: '#fff', textAlign: 'left' }}><th style={{ padding: '9px 11px', fontWeight: 700 }}>No</th><th style={{ padding: '9px 11px', fontWeight: 700 }}>Tanggal</th><th style={{ padding: '9px 11px', fontWeight: 700 }}>Pelapor</th><th style={{ padding: '9px 11px', fontWeight: 700 }}>Pokja</th><th style={{ padding: '9px 11px', fontWeight: 700 }}>Uraian</th><th style={{ padding: '9px 11px', fontWeight: 700 }}>Status</th></tr></thead>
-              <tbody>
-                {d.reportRows.map((r, i) => (
-                  <tr key={i} style={{ borderBottom: '1px solid #eef3ec', background: r.rowBg }}>
-                    <td style={{ padding: '9px 11px', color: '#7d9385', fontWeight: 600 }}>{r.no}</td>
-                    <td style={{ padding: '9px 11px', color: '#3a4f42', whiteSpace: 'nowrap' }}>{r.date}</td>
-                    <td style={{ padding: '9px 11px', color: '#22382b', fontWeight: 700 }}>{r.name}</td>
-                    <td style={{ padding: '9px 11px', color: '#5d7263', whiteSpace: 'nowrap' }}>{r.pokja}</td>
-                    <td style={{ padding: '9px 11px', color: '#3a4f42', maxWidth: 200 }}>{r.desc}</td>
-                    <td style={{ padding: '9px 11px' }}><button onClick={r.onStatus} style={{ border: 'none', cursor: r.statusCursor, fontFamily: 'inherit', fontSize: 11, fontWeight: 700, padding: '4px 10px', borderRadius: 99, background: r.statusBg, color: r.statusColor, whiteSpace: 'nowrap' }}>{r.status}</button></td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          {d.u ? (
+            <>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14, flexWrap: 'wrap', gap: 10 }}>
+                <div><div style={{ fontSize: 15, fontWeight: 800, color: '#16331f' }}>Rekap Laporan Masuk</div><div style={{ fontSize: '12.5px', color: '#7d9385' }}>{st.reports.length} laporan</div></div>
+                <button onClick={handleExportExcel} style={{ border: '1px solid #1f7e44', cursor: 'pointer', fontFamily: 'inherit', fontSize: 13, fontWeight: 700, color: '#1f7e44', background: '#eaf6ed', padding: '9px 16px', borderRadius: 10, display: 'flex', alignItems: 'center', gap: 7, whiteSpace: 'nowrap' }}><span>▦</span> Export Excel</button>
+              </div>
+               <div className="silap-scroll" style={{ overflowX: 'auto', border: '1px solid #e8efe6', borderRadius: 11 }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12.5px', minWidth: 580 }}>
+                  <thead><tr style={{ background: '#1f7e44', color: '#fff', textAlign: 'left' }}><th style={{ padding: '9px 11px', fontWeight: 700 }}>No</th><th style={{ padding: '9px 11px', fontWeight: 700 }}>Tanggal</th><th style={{ padding: '9px 11px', fontWeight: 700 }}>Pelapor</th><th style={{ padding: '9px 11px', fontWeight: 700 }}>Pokja</th><th style={{ padding: '9px 11px', fontWeight: 700 }}>Uraian</th><th style={{ padding: '9px 11px', fontWeight: 700 }}>Status</th></tr></thead>
+                  <tbody>
+                    {d.reportGroups.map((g: any, gi: number) => (
+                      <Fragment key={gi}>
+                        <tr style={{ background: '#eaf6ed' }}>
+                          <td colSpan={6} style={{ fontWeight: 700, fontSize: 13, color: '#1f7e44', padding: '8px 11px' }}>{g.monthLabel}</td>
+                        </tr>
+                        {g.reports.map((r: any, i: number) => (
+                          <tr key={`${gi}-${i}`} style={{ borderBottom: '1px solid #eef3ec', background: i % 2 ? '#fafcf9' : '#fff' }}>
+                            <td style={{ padding: '9px 11px', color: '#7d9385', fontWeight: 600 }}>{r.no}</td>
+                            <td style={{ padding: '9px 11px', color: '#3a4f42', whiteSpace: 'nowrap' }}>{r.date}</td>
+                            <td style={{ padding: '9px 11px', color: '#22382b', fontWeight: 700 }}>{r.name}</td>
+                            <td style={{ padding: '9px 11px', color: '#5d7263', whiteSpace: 'nowrap' }}>{r.pokja}</td>
+                            <td style={{ padding: '9px 11px', color: '#3a4f42', maxWidth: 200 }}>{r.desc}</td>
+                            <td style={{ padding: '9px 11px' }}><button onClick={r.onStatus} style={{ border: 'none', cursor: r.statusCursor, fontFamily: 'inherit', fontSize: 11, fontWeight: 700, padding: '4px 10px', borderRadius: 99, background: r.statusBg, color: r.statusColor, whiteSpace: 'nowrap' }}>{r.status}</button></td>
+                          </tr>
+                        ))}
+                      </Fragment>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
+          ) : (
+            <>
+              <div style={{ fontSize: 15, fontWeight: 800, color: '#16331f', marginBottom: 14 }}>Rekap Laporan Masuk</div>
+              <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+                {(['Baru', 'Diproses', 'Selesai'] as const).map(status => {
+                  const s = STATUS[status];
+                  const count = st.reports.filter(r => r.status === status).length;
+                  return (
+                    <div key={status} style={{ flex: '1 1 150px', background: s.bg, borderRadius: 12, padding: '16px 18px', minWidth: 120 }}>
+                      <div style={{ fontSize: 28, fontWeight: 800, color: s.color }}>{count}</div>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: s.color, marginTop: 4 }}>{status}</div>
+                    </div>
+                  );
+                })}
+              </div>
+            </>
+          )}
         </div>
       </div>
     </div>
@@ -317,7 +369,7 @@ export function LaporanSection({ d, st, dispatch, showToast }: Props) {
 export function DashboardSection({ d, st, dispatch, openPokja, showToast }: Props) {
   return (
     <div style={{ animation: 'silapFade .3s ease', paddingTop: 28 }}>
-      <div style={{ background: 'linear-gradient(135deg,#1f7e44,#15622f)', borderRadius: 20, padding: d.rs.dashHeroPad, color: '#fff', marginBottom: 20, display: 'flex', alignItems: 'center', gap: 16 }}>
+      <div style={{ background: 'linear-gradient(135deg,#1f7e44,#15622f)', borderRadius: 20, padding: d.rs.dashHeroPad, color: '#fff', marginBottom: 20, display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
         <div onClick={() => dispatch({ type: 'SET_AVATAR_MODAL', payload: true })} title="Edit foto profil" style={{ cursor: 'pointer', width: 64, height: 64, borderRadius: '50%', overflow: 'hidden', flexShrink: 0, position: 'relative', border: '3px solid rgba(255,255,255,.35)' }}>
           <div style={d.userVals.avatarStyleLg}>{d.userVals.avatarInitialLg}</div>
           <div style={{ position: 'absolute', bottom: 1, right: 1, width: 18, height: 18, borderRadius: '50%', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, color: '#1f7e44', fontWeight: 800 }}>✎</div>
@@ -327,25 +379,25 @@ export function DashboardSection({ d, st, dispatch, openPokja, showToast }: Prop
           <div style={{ fontSize: d.rs.dashWelcome, fontWeight: 800, letterSpacing: '-.02em', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{d.userVals.name}</div>
           <div style={{ fontSize: 13, opacity: .9, marginTop: 2 }}>{d.userVals.roleLabel} · {d.userVals.scope}</div>
         </div>
+        <div style={{ display: 'flex', gap: d.isMob ? '10px' : '14px', flexWrap: 'wrap' }}>
+          {d.dashStats.map((s, i) => (
+            <div key={i} style={{ background: 'rgba(255,255,255,.15)', borderRadius: 12, padding: d.isMob ? '10px 14px' : '12px 18px', textAlign: 'center', minWidth: d.isMob ? 80 : 100 }}>
+              <div style={{ fontSize: d.isMob ? 20 : 24, fontWeight: 800, lineHeight: 1 }}>{s.value}</div>
+              <div style={{ fontSize: d.isMob ? 10 : '11px', opacity: .85, marginTop: 2, whiteSpace: 'nowrap' }}>{s.label}</div>
+            </div>
+          ))}
+        </div>
       </div>
-      <div style={d.rs.dashStats}>
-        {d.dashStats.map((s, i) => (
-          <div key={i} style={{ background: '#fff', border: '1px solid #e3ebe1', borderRadius: 16, padding: 18 }}>
-            <div style={{ fontSize: 28, fontWeight: 800, color: s.accent, lineHeight: 1 }}>{s.value}</div>
-            <div style={{ fontSize: 13, color: '#69806f', marginTop: 6, fontWeight: 600 }}>{s.label}</div>
-          </div>
-        ))}
-      </div>
-      <div style={{ background: '#fff', border: '1px solid #e3ebe1', borderRadius: 18, padding: 20 }}>
+      <div style={{ background: '#fff', border: '1px solid #e3ebe1', borderRadius: 18, padding: 20, marginBottom: d.isMob ? '16px' : '20px' }}>
         <div style={{ fontSize: 15, fontWeight: 800, color: '#16331f', marginBottom: 5 }}>Hak Akses Anda</div>
         <div style={{ fontSize: 13, color: '#5d7263', marginBottom: 16 }}>{d.userVals.accessNote}</div>
         <div style={d.rs.dashQA}>
-          {d.quickActions.map((q, i) => (
-            <button key={i} onClick={q.onClick} style={{ textAlign: 'left', cursor: 'pointer', fontFamily: 'inherit', border: '1px solid #e8efe6', background: '#f7fbf6', borderRadius: 13, padding: 14, display: 'flex', alignItems: 'center', gap: 12, width: '100%' }}>
-              <div style={{ width: 38, height: 38, borderRadius: 11, background: q.tint, color: q.accent, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 17, fontWeight: 800, flexShrink: 0 }}>{q.glyph}</div>
-              <div><div style={{ fontSize: '13.5px', fontWeight: 700, color: '#1a3322' }}>{q.title}</div><div style={{ fontSize: '11.5px', color: '#7d9385' }}>{q.desc}</div></div>
-            </button>
-          ))}
+            {d.quickActions.map((q, i) => (
+              <button key={i} onClick={q.onClick} style={{ cursor: 'pointer', fontFamily: 'inherit', border: '1px solid #e8efe6', background: '#f7fbf6', borderRadius: 13, padding: '28px 14px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, width: '100%' }}>
+                <div style={{ width: 38, height: 38, borderRadius: 11, background: q.tint, color: q.accent, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 17, fontWeight: 800, flexShrink: 0 }}>{q.glyph}</div>
+                <div style={{ textAlign: 'center' }}><div style={{ fontSize: '13.5px', fontWeight: 700, color: '#1a3322' }}>{q.title}</div><div style={{ fontSize: '11.5px', color: '#7d9385' }}>{q.desc}</div></div>
+              </button>
+            ))}
         </div>
       </div>
       {d.userVals.isAdmin && (
@@ -403,6 +455,68 @@ export function DashboardSection({ d, st, dispatch, openPokja, showToast }: Prop
           )}
         </div>
       )}
+    </div>
+  );
+}
+
+export function InovasiSection({ d }: { d: DerivedData }) {
+  return (
+    <div style={{ animation: 'silapFade .3s ease', paddingTop: 28 }}>
+      <div style={{ marginBottom: 20 }}>
+        <h1 style={{ fontSize: d.rs.pageH1, fontWeight: 800, letterSpacing: '-.025em', color: '#14301d', marginBottom: 7 }}>Inovasi Desa</h1>
+        <p style={{ fontSize: '14.5px', color: '#5d7263' }}>Berita dan inovasi terbaru dari Desa Bunutwetan.</p>
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 16 }}>
+        {d.blogPosts.map((post: any) => (
+          <div key={post.id} style={{ background: '#fff', border: '1px solid #e3ebe1', borderRadius: 18, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+            <div style={{ height: 160, background: 'repeating-linear-gradient(135deg,#e6efe6,#e6efe6 10px,#eef5ee 10px,#eef5ee 20px)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <span style={{ fontFamily: 'ui-monospace,monospace', fontSize: 11, color: '#88a08e' }}>[ {post.category} ]</span>
+            </div>
+            <div style={{ padding: 18, flex: 1, display: 'flex', flexDirection: 'column' }}>
+              <span style={{ fontSize: 11, fontWeight: 700, color: '#2c9a55', textTransform: 'uppercase', letterSpacing: '.04em', marginBottom: 6 }}>{post.category}</span>
+              <h2 style={{ fontSize: 17, fontWeight: 800, color: '#14301d', lineHeight: 1.25, marginBottom: 8 }}>{post.title}</h2>
+              <p style={{ fontSize: '13px', color: '#5d7263', lineHeight: 1.6, marginBottom: 14, flex: 1 }}>{post.excerpt}</p>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderTop: '1px solid #f0f4ef', paddingTop: 12 }}>
+                <span style={{ fontSize: 12, color: '#88a08e', fontWeight: 600 }}>{post.author}</span>
+                <span style={{ fontSize: 12, color: '#9aa99e' }}>{post.date}</span>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export function PKKMembersSection({ d, st, dispatch, showToast }: Props) {
+  return (
+    <div style={{ animation: 'silapFade .3s ease', paddingTop: 28 }}>
+      <div style={{ marginBottom: 20 }}>
+        <h1 style={{ fontSize: d.rs.pageH1, fontWeight: 800, letterSpacing: '-.025em', color: '#14301d', marginBottom: 7 }}>Anggota PKK</h1>
+        <p style={{ fontSize: '14.5px', color: '#5d7263' }}>Daftar anggota PKK Desa Bunutwetan.</p>
+      </div>
+      <div style={{ background: '#fff', border: '1px solid #e3ebe1', borderRadius: 18, padding: 18, overflow: 'hidden' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14, flexWrap: 'wrap', gap: 10 }}>
+          <div><div style={{ fontSize: 15, fontWeight: 800, color: '#16331f' }}>Seluruh Anggota</div><div style={{ fontSize: '12.5px', color: '#7d9385' }}>{d.pkkMembers.length} anggota</div></div>
+        </div>
+        <div className="silap-scroll" style={{ overflowX: 'auto', border: '1px solid #e8efe6', borderRadius: 11 }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12.5px', minWidth: 580 }}>
+            <thead><tr style={{ background: '#1f7e44', color: '#fff', textAlign: 'left' }}><th style={{ padding: '9px 11px', fontWeight: 700 }}>Nama</th><th style={{ padding: '9px 11px', fontWeight: 700 }}>NIK</th><th style={{ padding: '9px 11px', fontWeight: 700 }}>Pokja</th><th style={{ padding: '9px 11px', fontWeight: 700 }}>Jabatan</th><th style={{ padding: '9px 11px', fontWeight: 700 }}>Alamat</th><th style={{ padding: '9px 11px', fontWeight: 700 }}>Telepon</th></tr></thead>
+            <tbody>
+              {d.pkkMembers.map((m: any, i: number) => (
+                <tr key={i} style={{ borderBottom: '1px solid #eef3ec', background: m.rowBg }}>
+                  <td style={{ padding: '9px 11px', color: '#22382b', fontWeight: 700 }}>{m.name}</td>
+                  <td style={{ padding: '9px 11px', fontFamily: 'ui-monospace,monospace', fontSize: 11, color: '#7d9385', letterSpacing: '.04em' }}>{m.nikMasked}</td>
+                  <td style={{ padding: '9px 11px', color: '#5d7263' }}>{m.pokjaName}</td>
+                  <td style={{ padding: '9px 11px' }}><span style={{ fontSize: 11, fontWeight: 700, padding: '4px 9px', borderRadius: 99, background: '#f0f4ef', color: '#5d7263' }}>{m.position}</span></td>
+                  <td style={{ padding: '9px 11px', color: '#3a4f42' }}>{m.address}</td>
+                  <td style={{ padding: '9px 11px', color: '#5d7263', fontFamily: 'ui-monospace,monospace', fontSize: 12 }}>{m.phone}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   );
 }

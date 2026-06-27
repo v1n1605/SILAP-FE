@@ -47,6 +47,27 @@ export interface FileItem {
   date: string;
 }
 
+export interface PKKMember {
+  id: string | number;
+  name: string;
+  nik: string;
+  pokja: number;
+  position: string;
+  address: string;
+  phone: string;
+}
+
+export interface BlogPost {
+  id: string | number;
+  title: string;
+  excerpt: string;
+  content: string;
+  author: string;
+  date: string;
+  category: string;
+  image?: string | null;
+}
+
 export interface ReportItem {
   id: string | number;
   date: string;
@@ -90,6 +111,7 @@ export interface AppState {
   gallery: GalleryItem[];
   files: FileItem[];
   reports: ReportItem[];
+  pkkMembers: PKKMember[];
 }
 
 export type AppAction =
@@ -132,6 +154,6 @@ export type AppAction =
   | { type: 'ADD_REPORT'; payload: ReportItem }
   | { type: 'UPDATE_REPORT_STATUS'; payload: string | number }
   | { type: 'SET_NEXT_ID'; payload: number }
-  | { type: 'SET_INITIAL_DATA'; payload: { users: User[]; events: CalendarEvent[]; gallery: GalleryItem[]; files: FileItem[]; reports: ReportItem[] } }
+  | { type: 'SET_INITIAL_DATA'; payload: { users: User[]; events: CalendarEvent[]; gallery: GalleryItem[]; files: FileItem[]; reports: ReportItem[]; pkkMembers: PKKMember[]; blogPosts: BlogPost[] } }
   | { type: 'SET_TOAST'; payload: string | null };
 

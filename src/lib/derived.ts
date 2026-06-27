@@ -1,6 +1,6 @@
 import { AppState, rlabel, raccent, rinit, canEditPokja, makeAvatarStyle } from './state';
-import { POKJA, MONTHS, STATUS, EXT_TINT } from './constants';
-import type { User } from './types';
+import { POKJA, MONTHS, MONTH_ABBR, STATUS, EXT_TINT } from './constants';
+import type { User, BlogPost } from './types';
 
 export interface DerivedData {
   u: User | null;
@@ -21,11 +21,13 @@ export interface DerivedData {
   pokjaFiles: any[];
   galFilters: { label: string; onClick: () => void; bg: string; color: string; border: string }[];
   allPhotos: any[];
-  reportRows: any[];
+  reportGroups: any[];
   dashStats: { value: number; label: string; accent: string }[];
   quickActions: any[];
   allUsers: any[];
   pokjaMemberList: any[];
+  pkkMembers: any[];
+  blogPosts: BlogPost[];
   umV: Record<string, any>;
   avM: { hasPreview: boolean; displayStyle: React.CSSProperties; displayInitial: string };
   cdUser: { name: string };
@@ -112,9 +114,11 @@ export function computeDerived(st: AppState, go: (r: string) => void, openPokja:
     { key: 'beranda', label: 'Beranda', route: 'beranda' },
     { key: 'pokja', label: 'Pokja', route: 'pokja' },
     { key: 'galeri', label: 'Galeri', route: 'galeri' },
+    { key: 'inovasi', label: 'Inovasi', route: 'inovasi' },
     { key: 'laporan', label: 'Laporan', route: 'laporan' },
   ];
-  if (u) navDef.push({ key: 'dashboard', label: 'Dashboard', route: 'dashboard' });
+  if (u) navDef.push({ key: 'dashboard', label: 'Akun', route: 'dashboard' });
+  if (u && u.role === 'admin') navDef.push({ key: 'anggota-pkk', label: 'Anggota PKK', route: 'anggota-pkk' });
   const activeRoute = st.route === 'detail' ? 'pokja' : st.route;
   const nav = navDef.map(n => ({
     label: n.label,
@@ -142,6 +146,7 @@ export function computeDerived(st: AppState, go: (r: string) => void, openPokja:
   ];
 
   const tabs = [
+    { key: 'profil', label: 'Profil' },
     { key: 'kalender', label: 'Kalender' },
     { key: 'galeri', label: 'Galeri' },
     { key: 'berkas', label: 'Berkas' },
@@ -205,23 +210,44 @@ export function computeDerived(st: AppState, go: (r: string) => void, openPokja:
     return { caption: g.caption, date: g.date, tag: g.tag, image: g.image, pokjaName: p.name, accent: p.accent };
   });
 
-  const reportRows = st.reports.map((r, i) => {
-    const s = STATUS[r.status] || STATUS['Baru'];
-    const canMod = !!(u && (u.role === 'admin' || u.role === 'ketua'));
-    return {
-      no: i + 1, date: r.date, name: r.name, contact: r.contact, pokja: r.pokja, desc: r.desc,
-      status: r.status, rowBg: i % 2 ? '#fafcf9' : '#fff',
-      statusBg: s.bg, statusColor: s.color, statusCursor: canMod ? 'pointer' : 'default',
-      onStatus: canMod ? () => dispatch({ type: 'UPDATE_REPORT_STATUS', payload: r.id }) : () => {},
-    };
-  });
+  const userPokjaName = u && u.role !== 'admin' && u.pokja ? POKJA.find(p => p.id === u.pokja)!.name : null;
+  const visibleReports = userPokjaName ? st.reports.filter(r => r.pokja === userPokjaName) : st.reports;
+
+  const reportGroups = (() => {
+    const map: Record<string, any[]> = {};
+    visibleReports.forEach((r) => {
+      const s = STATUS[r.status] || STATUS['Baru'];
+      const canMod = !!(u && (u.role === 'admin' || u.role === 'ketua'));
+      const row = {
+        id: r.id, date: r.date, name: r.name, contact: r.contact, pokja: r.pokja, desc: r.desc,
+        status: r.status,
+        statusBg: s.bg, statusColor: s.color, statusCursor: canMod ? 'pointer' : 'default',
+        onStatus: canMod ? () => dispatch({ type: 'UPDATE_REPORT_STATUS', payload: r.id }) : () => {},
+      };
+      const parts = r.date.split(' ');
+      const monthName = parts.length >= 3 ? MONTH_ABBR[parts[1]] : undefined;
+      const key = monthName ? `${monthName} ${parts[2]}` : 'Lainnya';
+      if (!map[key]) map[key] = [];
+      map[key].push(row);
+    });
+    return Object.entries(map).map(([monthLabel, rows]) => {
+      const parts = rows[0]?.date.split(' ') || [];
+      const mIdx = parts.length >= 3 ? MONTHS.indexOf(MONTH_ABBR[parts[1]] || '') : -1;
+      const sortKey = mIdx >= 0 ? `${parts[2]}-${String(mIdx + 1).padStart(2, '0')}` : '0000-00';
+      return {
+        monthLabel,
+        sortKey,
+        reports: rows.map((r: any, i: number) => ({ ...r, no: i + 1 })),
+      };
+    }).sort((a, b) => b.sortKey.localeCompare(a.sortKey));
+  })();
 
   const isAdmin = !!(u && u.role === 'admin');
   const scopeIds = isAdmin ? [1, 2, 3, 4] : (u && u.pokja ? [u.pokja] : []);
   const dashStats = [
     { value: st.events.filter(e => scopeIds.includes(e.pokja)).length, label: isAdmin ? 'Total kegiatan' : 'Kegiatan pokja Anda', accent: '#2c9a55' },
     { value: st.files.filter(f => scopeIds.includes(f.pokja)).length, label: isAdmin ? 'Total berkas' : 'Berkas pokja Anda', accent: '#3d7fd6' },
-    { value: st.reports.filter(r => r.status === 'Baru').length, label: 'Laporan baru', accent: '#d05c84' },
+    { value: visibleReports.filter(r => r.status === 'Baru').length, label: 'Laporan baru', accent: '#d05c84' },
   ];
 
   const quickActions = [
@@ -253,6 +279,13 @@ export function computeDerived(st: AppState, go: (r: string) => void, openPokja:
       avatarInitial: usr.avatar ? '' : rinit(usr),
     }))
     : [];
+
+  const pkkMembers = (st.pkkMembers || []).map((m, i) => ({
+    id: m.id, name: m.name, nikMasked: m.nik.slice(0, 4) + '·····' + m.nik.slice(-3),
+    pokjaName: POKJA.find(p => p.id === m.pokja)?.name || '—',
+    position: m.position, address: m.address, phone: m.phone,
+    rowBg: i % 2 ? '#fafcf9' : '#fff',
+  }));
 
   const um = st.userModal;
   const umIsKetua = u && u.role === 'ketua';
@@ -292,7 +325,7 @@ export function computeDerived(st: AppState, go: (r: string) => void, openPokja:
   return {
     u, active, canEditActive, isMob, isDesktop, rs,
     heroCurrent, heroDots, userVals, nav, pokjas, features, tabs, cal,
-    pokjaPhotos, pokjaFiles, galFilters, allPhotos, reportRows,
-    dashStats, quickActions, allUsers, pokjaMemberList, umV, avM, cdUser, lf, demoAccounts, fileModalV, eventModal,
+    pokjaPhotos, pokjaFiles, galFilters, allPhotos, reportGroups,
+    dashStats, quickActions, allUsers, pokjaMemberList, pkkMembers, blogPosts: st.blogPosts, umV, avM, cdUser, lf, demoAccounts, fileModalV, eventModal,
   };
 }

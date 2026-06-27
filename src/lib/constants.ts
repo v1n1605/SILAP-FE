@@ -9,6 +9,14 @@ export const POKJA: PokjaDef[] = [
 
 export const MONTHS = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
 
+export const MONTH_ABBR: Record<string, string> = {
+  'Jan': 'Januari', 'Feb': 'Februari', 'Mar': 'Maret', 'Apr': 'April',
+  'Mei': 'Mei', 'Jun': 'Juni', 'Jul': 'Juli', 'Agu': 'Agustus',
+  'Sep': 'September', 'Okt': 'Oktober', 'Nov': 'November', 'Des': 'Desember',
+};
+
+export const MONTH_NAMES_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+
 export const STATUS: Record<string, { bg: string; color: string }> = {
   'Baru': { bg: '#fbe7ee', color: '#c0436c' },
   'Diproses': { bg: '#fbf1de', color: '#b87d1c' },
