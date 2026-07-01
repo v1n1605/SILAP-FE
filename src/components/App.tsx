@@ -1,9 +1,10 @@
 'use client';
 
 import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
-import { reducer, initialState, AppState, AppAction, initialBlogPosts } from '@/lib/state';
+import { reducer, initialState, AppState, AppAction } from '@/lib/state';
 import { computeDerived } from '@/lib/derived';
-import { BerandaSection, PokjaOverviewSection, PokjaDetailSection, GaleriSection, LaporanSection, DashboardSection, PKKMembersSection, InovasiSection } from './Sections';
+import { MilkdownProvider } from '@milkdown/react';
+import { BerandaSection, PokjaOverviewSection, PokjaDetailSection, GaleriSection, PengumumanSection, LaporanSection, DashboardSection, PKKMembersSection, InovasiSection, EditorSection, BlogPostSection, InventarisSection, SuratSection } from './Sections';
 import { LoginModal, EventModal, GalModal, FileUploadModal, AvatarModal, UserModal, ConfirmDeleteModal } from './Modals';
 import { supabase } from '@/lib/supabase';
 
@@ -52,6 +53,12 @@ export default function App() {
           supabase.from('reports').select('*'),
         ]);
 
+        let orgPositionsData: any[] = [];
+        try { const { data } = await supabase.from('org_positions').select('*').order('sort_order'); orgPositionsData = data || []; } catch (_) {}
+
+        let blogPostsData: any[] = [];
+        try { const { data } = await supabase.from('blog_posts').select('*').order('created_at', { ascending: false }); blogPostsData = (data || []).map((p: any) => ({ ...p, date: p.created_at })); } catch (_) {}
+
         if (errUsers || errEvents || errGallery || errFiles || errReports) {
           console.error({ errUsers, errEvents, errGallery, errFiles, errReports });
           showToast('Koneksi ke Supabase gagal atau tabel tidak ditemukan');
@@ -71,6 +78,9 @@ export default function App() {
         let pkkMembersData: any[] = [];
         try { const { data } = await supabase.from('pkk_members').select('*'); pkkMembersData = data || []; } catch (_) {}
 
+        let suratData: any[] = [];
+        try { const { data } = await supabase.from('surat').select('*'); suratData = data || []; } catch (_) {}
+
         dispatch({
           type: 'SET_INITIAL_DATA',
           payload: {
@@ -80,7 +90,11 @@ export default function App() {
             files: files || [],
             reports: reports || [],
             pkkMembers: pkkMembersData,
-            blogPosts: initialBlogPosts,
+            inventory: [],
+            surat: suratData,
+            blogPosts: blogPostsData,
+            orgPositions: orgPositionsData,
+            pengumuman: [],
           },
         });
 
@@ -122,6 +136,15 @@ export default function App() {
           supabase.from('reports').select('*'),
         ]);
 
+        let orgPositionsData: any[] = [];
+        try { const { data } = await supabase.from('org_positions').select('*').order('sort_order'); orgPositionsData = data || []; } catch (_) {}
+
+        let blogPostsData: any[] = [];
+        try { const { data } = await supabase.from('blog_posts').select('*').order('created_at', { ascending: false }); blogPostsData = (data || []).map((p: any) => ({ ...p, date: p.created_at })); } catch (_) {}
+
+        let pkkMembersData: any[] = [];
+        try { const { data } = await supabase.from('pkk_members').select('*'); pkkMembersData = data || []; } catch (_) {}
+
         const mappedEvents = (events || []).map((e: any) => ({
           id: e.id,
           pokja: e.pokja,
@@ -132,6 +155,9 @@ export default function App() {
           time: e.time,
         }));
 
+        let suratData: any[] = [];
+        try { const { data } = await supabase.from('surat').select('*'); suratData = data || []; } catch (_) {}
+
         dispatch({
           type: 'SET_INITIAL_DATA',
           payload: {
@@ -140,8 +166,12 @@ export default function App() {
             gallery: gallery || [],
             files: files || [],
             reports: reports || [],
-            pkkMembers: [],
-            blogPosts: [],
+            pkkMembers: pkkMembersData,
+            inventory: [],
+            surat: suratData,
+            blogPosts: blogPostsData,
+            orgPositions: orgPositionsData,
+            pengumuman: [],
           },
         });
       } catch (err) {
@@ -413,6 +443,200 @@ export default function App() {
           dispatch({ type: 'SAVE_AVATAR', payload: action.payload });
           break;
         }
+        case 'ADD_BLOG_POST': {
+          const { error, data } = await supabase
+            .from('blog_posts')
+            .insert({
+              title: action.payload.title,
+              excerpt: action.payload.excerpt,
+              category: action.payload.category,
+              content: action.payload.content,
+              author: action.payload.author || 'Sekretaris',
+            })
+            .select()
+            .single();
+
+          if (error) {
+            showToast('Gagal menambahkan artikel: ' + error.message);
+            return;
+          }
+          dispatch({ type: 'ADD_BLOG_POST', payload: { ...action.payload, id: data.id, created_at: data.created_at } });
+          break;
+        }
+        case 'UPDATE_BLOG_POST': {
+          const { error, data } = await supabase
+            .from('blog_posts')
+            .update({
+              title: action.payload.title,
+              excerpt: action.payload.excerpt,
+              category: action.payload.category,
+              content: action.payload.content,
+              author: action.payload.author,
+            })
+            .eq('id', action.payload.id)
+            .select()
+            .single();
+
+          if (error) {
+            showToast('Gagal mengupdate artikel: ' + error.message);
+            return;
+          }
+          dispatch({ type: 'UPDATE_BLOG_POST', payload: { ...action.payload, id: data.id, created_at: data.created_at } });
+          showToast('Artikel "' + action.payload.title + '" diperbarui');
+          break;
+        }
+        case 'DELETE_BLOG_POST': {
+          const { error } = await supabase.from('blog_posts').delete().eq('id', action.payload);
+          if (error) {
+            showToast('Gagal menghapus artikel: ' + error.message);
+            return;
+          }
+          dispatch({ type: 'DELETE_BLOG_POST', payload: action.payload });
+          break;
+        }
+        case 'ADD_PKK_MEMBER': {
+          const { error, data } = await supabase
+            .from('pkk_members')
+            .insert({
+              name: action.payload.name,
+              position: action.payload.position,
+              gender: action.payload.gender,
+              birth_place: action.payload.birth_place,
+              birth_date: action.payload.birth_date,
+              marital_status: action.payload.marital_status,
+              address: action.payload.address,
+              education: action.payload.education,
+              occupation: action.payload.occupation,
+              membership_status: action.payload.membership_status,
+            })
+            .select()
+            .single();
+
+          if (error) {
+            showToast('Gagal menambahkan anggota: ' + error.message);
+            return;
+          }
+          dispatch({ type: 'ADD_PKK_MEMBER', payload: { ...action.payload, id: data.id } });
+          showToast('Anggota ditambahkan');
+          break;
+        }
+        case 'UPDATE_PKK_MEMBER': {
+          const { error } = await supabase
+            .from('pkk_members')
+            .update({
+              name: action.payload.name,
+              position: action.payload.position,
+              gender: action.payload.gender,
+              birth_place: action.payload.birth_place,
+              birth_date: action.payload.birth_date,
+              marital_status: action.payload.marital_status,
+              address: action.payload.address,
+              education: action.payload.education,
+              occupation: action.payload.occupation,
+              membership_status: action.payload.membership_status,
+            })
+            .eq('id', action.payload.id);
+
+          if (error) {
+            showToast('Gagal memperbarui anggota: ' + error.message);
+            return;
+          }
+          dispatch({ type: 'UPDATE_PKK_MEMBER', payload: action.payload });
+          showToast('Anggota diperbarui');
+          break;
+        }
+        case 'DELETE_PKK_MEMBER': {
+          const { error } = await supabase.from('pkk_members').delete().eq('id', action.payload);
+          if (error) {
+            showToast('Gagal menghapus anggota: ' + error.message);
+            return;
+          }
+          dispatch({ type: 'DELETE_PKK_MEMBER', payload: action.payload });
+          showToast('Anggota dihapus');
+          break;
+        }
+        case 'ADD_INVENTORY': {
+          dispatch({ type: 'ADD_INVENTORY', payload: action.payload });
+          showToast('Barang ditambahkan');
+          break;
+        }
+        case 'UPDATE_INVENTORY': {
+          dispatch({ type: 'UPDATE_INVENTORY', payload: action.payload });
+          showToast('Barang diperbarui');
+          break;
+        }
+        case 'DELETE_INVENTORY': {
+          dispatch({ type: 'DELETE_INVENTORY', payload: action.payload });
+          showToast('Barang dihapus');
+          break;
+        }
+        case 'ADD_SURAT': {
+          const { error, data } = await supabase
+            .from('surat')
+            .insert({
+              type: action.payload.type,
+              tanggal_terima: action.payload.tanggal_terima,
+              tanggal_surat: action.payload.tanggal_surat,
+              nomor_surat: action.payload.nomor_surat,
+              asal_surat_dari: action.payload.asal_surat_dari,
+              perihal: action.payload.perihal,
+              lampiran: action.payload.lampiran,
+              diteruskan_kepada: action.payload.diteruskan_kepada,
+            })
+            .select()
+            .single();
+
+          if (error) {
+            showToast('Gagal menambahkan surat: ' + error.message);
+            return;
+          }
+          dispatch({ type: 'ADD_SURAT', payload: { ...action.payload, id: data.id } });
+          break;
+        }
+        case 'UPDATE_SURAT': {
+          const { error } = await supabase
+            .from('surat')
+            .update({
+              type: action.payload.type,
+              tanggal_terima: action.payload.tanggal_terima,
+              tanggal_surat: action.payload.tanggal_surat,
+              nomor_surat: action.payload.nomor_surat,
+              asal_surat_dari: action.payload.asal_surat_dari,
+              perihal: action.payload.perihal,
+              lampiran: action.payload.lampiran,
+              diteruskan_kepada: action.payload.diteruskan_kepada,
+            })
+            .eq('id', action.payload.id);
+
+          if (error) {
+            showToast('Gagal memperbarui surat: ' + error.message);
+            return;
+          }
+          dispatch({ type: 'UPDATE_SURAT', payload: action.payload });
+          showToast('Surat diperbarui');
+          break;
+        }
+        case 'DELETE_SURAT': {
+          const { error } = await supabase.from('surat').delete().eq('id', action.payload);
+          if (error) {
+            showToast('Gagal menghapus surat: ' + error.message);
+            return;
+          }
+          dispatch({ type: 'DELETE_SURAT', payload: action.payload });
+          break;
+        }
+        case 'ADD_PENGUMUMAN': {
+          dispatch({ type: 'ADD_PENGUMUMAN', payload: action.payload });
+          break;
+        }
+        case 'UPDATE_PENGUMUMAN': {
+          dispatch({ type: 'UPDATE_PENGUMUMAN', payload: action.payload });
+          break;
+        }
+        case 'DELETE_PENGUMUMAN': {
+          dispatch({ type: 'DELETE_PENGUMUMAN', payload: action.payload });
+          break;
+        }
         default:
           dispatch(action);
       }
@@ -437,7 +661,7 @@ export default function App() {
 
   const handleLogout = () => {
     setConfirmModal({
-      title: 'Keluar dari SILAP?',
+      title: 'Keluar dari PENDESA-P3S?',
       description: 'Apakah Anda yakin ingin keluar dari akun Anda?',
       confirmLabel: 'Keluar',
       isDanger: false,
@@ -452,12 +676,12 @@ export default function App() {
 
   if (st.loading) {
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#eef3ec', fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif", color: '#1c2a21' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 20, background: 'rgba(255, 255, 255, 0.8)', padding: '40px 60px', borderRadius: 24, boxShadow: '0 20px 50px -15px rgba(22, 51, 31, 0.15)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255, 255, 255, 0.5)' }}>
-          <div style={{ width: 50, height: 50, borderRadius: '50%', border: '4px solid #e1eadf', borderTop: '4px solid #1f7e44', animation: 'silapSpin 1s linear infinite' }}></div>
+      <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#f1f5f9', fontFamily: "'Inter', system-ui, sans-serif", color: '#1e293b' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 20, background: 'rgba(255, 255, 255, 0.8)', padding: '40px 60px', boxShadow: '0 10px 40px rgba(0,0,0,0.08)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255, 255, 255, 0.5)' }}>
+          <div style={{ width: 50, height: 50, borderRadius: '50%', border: '4px solid #e2e8f0', borderTop: '4px solid #1e3a5f', animation: 'silapSpin 1s linear infinite' }}></div>
           <div style={{ textAlign: 'center' }}>
-            <h1 style={{ fontSize: 24, fontWeight: 800, color: '#16331f', margin: '0 0 4px', letterSpacing: '-0.02em' }}>SILAP</h1>
-            <p style={{ fontSize: 13, fontWeight: 600, color: '#6a8273', margin: 0 }}>Menghubungkan ke database...</p>
+            <h1 style={{ fontSize: 24, fontWeight: 800, color: '#0f172a', margin: '0 0 4px', letterSpacing: '-0.02em' }}>PENDESA-P3S</h1>
+            <p style={{ fontSize: 13, fontWeight: 600, color: '#64748b', margin: 0 }}>Menghubungkan ke database...</p>
           </div>
         </div>
         <style>{`
@@ -471,23 +695,23 @@ export default function App() {
   }
 
   return (
-    <div className="silap-scroll" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: '#eef3ec', fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif", color: '#1c2a21', WebkitFontSmoothing: 'antialiased' }}>
+    <div className="silap-scroll" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: '#f1f5f9', fontFamily: "'Inter', system-ui, sans-serif", color: '#1e293b', WebkitFontSmoothing: 'antialiased' }}>
       {/* HEADER */}
-      <header style={{ position: 'sticky', top: 0, zIndex: 40, background: 'rgba(255,255,255,.92)', backdropFilter: 'blur(12px)', borderBottom: '1px solid #e1eadf' }}>
+      <header style={{ position: 'sticky', top: 0, zIndex: 40, background: 'rgba(255,255,255,.92)', backdropFilter: 'blur(12px)', borderBottom: '1px solid #e2e8f0' }}>
         <div style={{ maxWidth: '95%', margin: '0 auto', padding: d.rs.headerPad, display: 'flex', alignItems: 'center', gap: 16 }}>
           <div onClick={() => go('beranda')} style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', flexShrink: 0 }}>
             <img src="./Logo1.png" alt="Logo Desa Bunutwetan" style={{ width: d.rs.logoSize, height: d.rs.logoSize, objectFit: 'contain' }} />
             <img src="./pkk.png" alt="Logo PKK" style={{ width: d.rs.logoSize, height: d.rs.logoSize, objectFit: 'contain' }} />
             <div style={{ lineHeight: 1.05 }}>
-              <div style={{ fontSize: d.rs.logoFont, fontWeight: 800, letterSpacing: '-.02em', color: '#16331f' }}>SILAP</div>
-              {d.isDesktop && <div style={{ fontSize: '10.5px', fontWeight: 600, color: '#6a8273', letterSpacing: '.02em' }}>Sistem Informasi Layanan Program Desa</div>}
+              <div style={{ fontSize: d.rs.logoFont, fontWeight: 800, letterSpacing: '-.02em', color: '#0f172a' }}>PENDESA-P3S</div>
+              {d.isDesktop && <div style={{ fontSize: '10.5px', fontWeight: 600, color: '#64748b', letterSpacing: '.02em' }}>Sistem Informasi Penguatan Desa Modul P3S Bunutwetan</div>}
             </div>
           </div>
 
           {d.isDesktop && (
             <nav style={{ display: 'flex', alignItems: 'center', gap: 4, marginLeft: 14 }}>
               {d.nav.map((item, i) => (
-                <button key={i} onClick={item.onClick} style={{ border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: 14, fontWeight: 600, padding: '9px 14px', borderRadius: 10, background: item.bg, color: item.color, transition: 'background .15s' }}>{item.label}</button>
+                <button key={i} onClick={item.onClick} style={{ border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: 14, fontWeight: 600, padding: '9px 14px', background: item.bg, color: item.color, transition: 'background .15s' }}>{item.label}</button>
               ))}
             </nav>
           )}
@@ -496,15 +720,15 @@ export default function App() {
             <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 10 }}>
               {!d.u && (
                 <>
-                  <span style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: '12.5px', fontWeight: 600, color: '#7d9385', background: '#f0f6ee', padding: '7px 12px', borderRadius: 99, border: '1px solid #e1eadf' }}><span style={{ width: 7, height: 7, borderRadius: '50%', background: '#8aa996' }}></span>Mode Warga</span>
-                  <button onClick={() => dispatch({ type: 'SET_SHOW_LOGIN', payload: true })} style={{ border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: 14, fontWeight: 700, padding: '10px 20px', borderRadius: 11, background: '#1f7e44', color: '#fff', boxShadow: '0 6px 16px -7px rgba(31,126,68,.8)' }}>Masuk</button>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: '12.5px', fontWeight: 600, color: '#94a3b8', background: '#f8fafc', padding: '7px 12px', border: '1px solid #e2e8f0' }}><span style={{ width: 7, height: 7, background: '#94a3b8' }}></span>Mode Warga</span>
+                  <button onClick={() => dispatch({ type: 'SET_SHOW_LOGIN', payload: true })} style={{ border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: 14, fontWeight: 700, padding: '10px 20px', background: '#1e3a5f', color: '#fff', boxShadow: '0 2px 8px rgba(30,58,95,0.15)' }}>Masuk</button>
                 </>
               )}
               {d.u && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 9, background: '#fff', border: '1px solid #e1eadf', padding: '4px 5px 4px 12px', borderRadius: 99 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 9, background: '#fff', border: '1px solid #e2e8f0', padding: '4px 5px 4px 12px' }}>
                   <div style={{ textAlign: 'right', lineHeight: 1.15 }}><div style={{ fontSize: 13, fontWeight: 700 }}>{d.userVals.name}</div><div style={{ fontSize: '10.5px', fontWeight: 600, color: d.userVals.chipColor }}>{d.userVals.roleLabel}</div></div>
-                  <div onClick={() => dispatch({ type: 'SET_AVATAR_MODAL', payload: true })} title="Edit foto profil" style={{ cursor: 'pointer', width: 32, height: 32, borderRadius: '50%', overflow: 'hidden', flexShrink: 0, border: `2px solid ${d.userVals.chipColor}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><div style={d.userVals.avatarStyleSm}>{d.userVals.avatarInitialSm}</div></div>
-                  <button onClick={handleLogout} title="Keluar" style={{ border: 'none', cursor: 'pointer', background: '#f0f6ee', color: '#5b7264', width: 32, height: 32, borderRadius: '50%', fontSize: 15, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>⏻</button>
+                  <div onClick={() => dispatch({ type: 'SET_AVATAR_MODAL', payload: true })} title="Edit foto profil" style={{ cursor: 'pointer', width: 32, height: 32, overflow: 'hidden', flexShrink: 0, border: `2px solid ${d.userVals.chipColor}`, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><div style={d.userVals.avatarStyleSm}>{d.userVals.avatarInitialSm}</div></div>
+                  <button onClick={handleLogout} title="Keluar" style={{ border: 'none', cursor: 'pointer', background: '#f8fafc', color: '#475569', width: 32, height: 32, fontSize: 15, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>⏻</button>
                 </div>
               )}
             </div>
@@ -512,52 +736,57 @@ export default function App() {
 
           {d.isMob && (
             <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8 }}>
-              {d.u && <div onClick={() => dispatch({ type: 'SET_AVATAR_MODAL', payload: true })} style={{ cursor: 'pointer', width: 34, height: 34, borderRadius: '50%', overflow: 'hidden', border: `2px solid ${d.userVals.chipColor}`, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><div style={d.userVals.avatarStyleSm}>{d.userVals.avatarInitialSm}</div></div>}
-              {!d.u && <button onClick={() => dispatch({ type: 'SET_SHOW_LOGIN', payload: true })} style={{ border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: 13, fontWeight: 700, padding: '8px 14px', borderRadius: 10, background: '#1f7e44', color: '#fff' }}>Masuk</button>}
-              <button onClick={() => dispatch({ type: 'TOGGLE_MENU' })} style={{ border: '1px solid #e1eadf', background: '#fff', cursor: 'pointer', width: 38, height: 38, borderRadius: 11, fontSize: 18, color: '#5d7263', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{st.menuOpen ? '✕' : '☰'}</button>
+              {d.u && <div onClick={() => dispatch({ type: 'SET_AVATAR_MODAL', payload: true })} style={{ cursor: 'pointer', width: 34, height: 34, overflow: 'hidden', border: `2px solid ${d.userVals.chipColor}`, borderRadius: '50%', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><div style={d.userVals.avatarStyleSm}>{d.userVals.avatarInitialSm}</div></div>}
+              {!d.u && <button onClick={() => dispatch({ type: 'SET_SHOW_LOGIN', payload: true })} style={{ border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: 13, fontWeight: 700, padding: '8px 14px', background: '#1e3a5f', color: '#fff' }}>Masuk</button>}
+              <button onClick={() => dispatch({ type: 'TOGGLE_MENU' })} style={{ border: '1px solid #e2e8f0', background: '#fff', cursor: 'pointer', width: 38, height: 38, fontSize: 18, color: '#475569', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{st.menuOpen ? '✕' : '☰'}</button>
             </div>
           )}
         </div>
 
         {st.menuOpen && d.isMob && (
-          <div style={{ borderTop: '1px solid #e8efe6', background: '#fff', padding: '10px 16px 16px' }}>
+          <div style={{ borderTop: '1px solid #e2e8f0', background: '#fff', padding: '10px 16px 16px' }}>
             {d.nav.map((item, i) => (
-              <button key={i} onClick={item.onMobile} style={{ width: '100%', textAlign: 'left', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: 15, fontWeight: 600, padding: '12px 14px', borderRadius: 11, background: item.bg, color: item.color, display: 'block', marginBottom: 4 }}>{item.label}</button>
+              <button key={i} onClick={item.onMobile} style={{ width: '100%', textAlign: 'left', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: 15, fontWeight: 600, padding: '12px 14px', background: item.bg, color: item.color, display: 'block', marginBottom: 4 }}>{item.label}</button>
             ))}
             {d.u && (
               <>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: '#f4f9f3', borderRadius: 12, padding: '12px 14px', marginTop: 6, marginBottom: 8 }}>
-                  <div style={{ width: 38, height: 38, borderRadius: '50%', overflow: 'hidden', flexShrink: 0, border: `2px solid ${d.userVals.chipColor}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><div style={d.userVals.avatarStyleSm}>{d.userVals.avatarInitialSm}</div></div>
-                  <div><div style={{ fontSize: 14, fontWeight: 700, color: '#1a3322' }}>{d.userVals.name}</div><div style={{ fontSize: 12, color: d.userVals.chipColor, fontWeight: 600 }}>{d.userVals.roleLabel}</div></div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: '#f8fafc', padding: '12px 14px', marginTop: 6, marginBottom: 8 }}>
+                  <div style={{ width: 38, height: 38, overflow: 'hidden', flexShrink: 0, border: `2px solid ${d.userVals.chipColor}`, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><div style={d.userVals.avatarStyleSm}>{d.userVals.avatarInitialSm}</div></div>
+                  <div><div style={{ fontSize: 14, fontWeight: 700, color: '#0f172a' }}>{d.userVals.name}</div><div style={{ fontSize: 12, color: d.userVals.chipColor, fontWeight: 600 }}>{d.userVals.roleLabel}</div></div>
                 </div>
-                <button onClick={handleLogout} style={{ width: '100%', border: '1px solid #e1eadf', cursor: 'pointer', fontFamily: 'inherit', fontSize: 14, fontWeight: 700, padding: 11, borderRadius: 11, background: '#fff', color: '#c0436c' }}>Keluar</button>
+                <button onClick={handleLogout} style={{ width: '100%', border: '1px solid #e2e8f0', cursor: 'pointer', fontFamily: 'inherit', fontSize: 14, fontWeight: 700, padding: 11, background: '#fff', color: '#ef4444' }}>Keluar</button>
               </>
             )}
           </div>
         )}
       </header>
 
-      <main style={{ flex: 1, width: '100%', maxWidth: '95%', margin: '0 auto', padding: d.rs.mainPad }}>
+      <main style={{ flex: 1, width: '100%', maxWidth: '95%', margin: '0 auto', padding: st.route === 'pengumuman' ? '0' : d.rs.mainPad, display: st.route === 'pengumuman' ? 'flex' : 'block', flexDirection: 'column' }}>
         {st.route === 'beranda' && <BerandaSection d={d} st={st} dispatch={asyncDispatch} go={go} openPokja={openPokja} showToast={showToast} />}
         {st.route === 'pokja' && <PokjaOverviewSection d={d} go={go} />}
         {st.route === 'detail' && <PokjaDetailSection d={d} st={st} dispatch={asyncDispatch} go={go} openPokja={openPokja} showToast={showToast} />}
-        {st.route === 'galeri' && <GaleriSection d={d} />}
-        {st.route === 'inovasi' && <InovasiSection d={d} />}
+        {st.route === 'galeri' && <GaleriSection d={d} st={st} dispatch={asyncDispatch} showToast={showToast} go={go} openPokja={openPokja} />}
+        {st.route === 'pengumuman' && <PengumumanSection d={d} st={st} dispatch={asyncDispatch} showToast={showToast} go={go} openPokja={openPokja} />}
+        {st.route === 'inovasi' && <InovasiSection d={d} st={st} dispatch={asyncDispatch} go={go} />}
+        {st.route === 'editor' && <MilkdownProvider><EditorSection d={d} st={st} dispatch={asyncDispatch} go={go} showToast={showToast} /></MilkdownProvider>}
+        {st.route === 'post' && <BlogPostSection d={d} st={st} dispatch={asyncDispatch} go={go} />}
         {st.route === 'laporan' && <LaporanSection d={d} st={st} dispatch={asyncDispatch} go={go} openPokja={openPokja} showToast={showToast} />}
         {st.route === 'dashboard' && d.u && <DashboardSection d={d} st={st} dispatch={asyncDispatch} go={go} openPokja={openPokja} showToast={showToast} />}
         {st.route === 'anggota-pkk' && d.u && d.u.role === 'admin' && <PKKMembersSection d={d} st={st} dispatch={asyncDispatch} go={go} openPokja={openPokja} showToast={showToast} />}
+        {st.route === 'inventaris' && d.u && d.u.role === 'admin' && <InventarisSection d={d} st={st} dispatch={asyncDispatch} go={go} openPokja={openPokja} showToast={showToast} />}
+        {st.route === 'surat' && d.u && d.u.role === 'admin' && <SuratSection d={d} st={st} dispatch={asyncDispatch} go={go} openPokja={openPokja} showToast={showToast} />}
       </main>
 
       {/* FOOTER */}
-      <footer style={{ borderTop: '1px solid #e1eadf', background: '#fff' }}>
+      <footer style={{ borderTop: '1px solid #e2e8f0', background: '#fff' }}>
         <div style={{ maxWidth: '95%', margin: '0 auto', padding: '22px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <img src="./Logo1.png" alt="Logo Desa Bunutwetan" style={{ width: 36, height: 36, objectFit: 'contain' }} />
-            <div style={{ fontSize: '12.5px', color: '#69806f' }}>
-              <strong style={{ color: '#2a4031' }}>Desa Bunutwetan</strong><br />Kecamatan Pakis · Kabupaten Malang
+            <div style={{ fontSize: '12.5px', color: '#64748b' }}>
+              <strong style={{ color: '#334155' }}>Desa Bunutwetan</strong><br />Kecamatan Pakis · Kabupaten Malang
             </div>
           </div>
-          <div style={{ fontSize: 12, color: '#9aa99e' }}>© 2026 Pemerintah Desa Bunutwetan. All Rights Reserved.</div>
+          <div style={{ fontSize: 12, color: '#cbd5e1' }}>© 2026 Pemerintah Desa Bunutwetan. All Rights Reserved.</div>
         </div>
       </footer>
 
@@ -571,16 +800,16 @@ export default function App() {
       {st.confirmDelete && <ConfirmDeleteModal st={st} d={d} dispatch={asyncDispatch} showToast={showToast} />}
 
       {confirmModal && (
-        <div onClick={() => setConfirmModal(null)} style={{ position: 'fixed', inset: 0, zIndex: 100, background: 'rgba(18,40,26,.55)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, animation: 'silapFade .2s ease' }}>
-          <div onClick={e => e.stopPropagation()} style={{ background: '#fff', borderRadius: 20, maxWidth: 350, width: '100%', padding: 26, animation: 'silapPop .25s ease', textAlign: 'center' }}>
-            <div style={{ width: 52, height: 52, borderRadius: '50%', background: confirmModal.isDanger ? '#fbe7ee' : '#eaf6ed', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, color: confirmModal.isDanger ? '#c0436c' : '#1f7e44', margin: '0 auto 14px' }}>
+        <div onClick={() => setConfirmModal(null)} style={{ position: 'fixed', inset: 0, zIndex: 100, background: 'rgba(15,23,42,.6)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, animation: 'silapFade .2s ease' }}>
+          <div onClick={e => e.stopPropagation()} style={{ background: '#fff', maxWidth: 350, width: '100%', padding: 26, animation: 'silapPop .25s ease', textAlign: 'center' }}>
+            <div style={{ width: 52, height: 52, background: confirmModal.isDanger ? '#fef2f2' : '#eef2ff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, color: confirmModal.isDanger ? '#ef4444' : '#1e3a5f', margin: '0 auto 14px' }}>
               {confirmModal.isDanger ? '⚠' : '⏻'}
             </div>
-            <div style={{ fontSize: 17, fontWeight: 800, color: '#16331f', marginBottom: 6 }}>{confirmModal.title}</div>
-            <div style={{ fontSize: '13.5px', color: '#7d9385', marginBottom: 22, lineHeight: 1.5 }}>{confirmModal.description}</div>
+            <div style={{ fontSize: 17, fontWeight: 800, color: '#0f172a', marginBottom: 6 }}>{confirmModal.title}</div>
+            <div style={{ fontSize: '13.5px', color: '#94a3b8', marginBottom: 22, lineHeight: 1.5 }}>{confirmModal.description}</div>
             <div style={{ display: 'flex', gap: 10 }}>
-              <button onClick={() => setConfirmModal(null)} style={{ flex: 1, border: '1px solid #dde7df', cursor: 'pointer', fontFamily: 'inherit', fontSize: 14, fontWeight: 700, padding: 12, borderRadius: 11, background: '#fff', color: '#5d7263' }}>Batal</button>
-              <button onClick={confirmModal.onConfirm} style={{ flex: 1.4, border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: 14, fontWeight: 700, padding: 12, borderRadius: 11, background: confirmModal.isDanger ? '#c0436c' : '#1f7e44', color: '#fff' }}>
+              <button onClick={() => setConfirmModal(null)} style={{ flex: 1, border: '1px solid #e2e8f0', cursor: 'pointer', fontFamily: 'inherit', fontSize: 14, fontWeight: 700, padding: 12, background: '#fff', color: '#475569' }}>Batal</button>
+              <button onClick={confirmModal.onConfirm} style={{ flex: 1.4, border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: 14, fontWeight: 700, padding: 12, background: confirmModal.isDanger ? '#ef4444' : '#1e3a5f', color: '#fff' }}>
                 {confirmModal.confirmLabel}
               </button>
             </div>
@@ -590,8 +819,8 @@ export default function App() {
 
       {/* TOAST */}
       {st.toast && (
-        <div style={{ position: 'fixed', bottom: 24, left: '50%', transform: 'translateX(-50%)', zIndex: 80, background: '#16331f', color: '#fff', fontSize: '13.5px', fontWeight: 600, padding: '12px 20px', borderRadius: 13, boxShadow: '0 16px 40px -12px rgba(10,30,16,.6)', animation: 'silapToast .25s ease', display: 'flex', alignItems: 'center', gap: 9, whiteSpace: 'nowrap' }}>
-          <span style={{ color: '#7fdca0' }}>✓</span>{st.toast}
+        <div style={{ position: 'fixed', bottom: 24, left: '50%', transform: 'translateX(-50%)', zIndex: 99999, background: '#0f172a', color: '#fff', fontSize: '13.5px', fontWeight: 600, padding: '12px 20px', boxShadow: '0 8px 24px rgba(0,0,0,0.1)', animation: 'silapToast .25s ease', display: 'flex', alignItems: 'center', gap: 9, whiteSpace: 'nowrap' }}>
+          <span style={{ color: '#22c55e' }}>✓</span>{st.toast}
         </div>
       )}
     </div>

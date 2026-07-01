@@ -6,8 +6,12 @@ import type {
   FileItem,
   ReportItem,
   PKKMember,
+  InventoryItem,
+  SuratItem,
   PokjaDef,
   BlogPost,
+  OrgPosition,
+  PengumumanItem,
 } from "./types";
 
 export const initialUsers: User[] = [
@@ -341,19 +345,121 @@ export const initialReports: ReportItem[] = [
   },
 ];
 
-export const initialPKKMembers: PKKMember[] = [
-  { id: 1, name: "Hj. Nurhayati",       nik: "3271015201750002", pokja: 1, position: "Ketua",      address: "Jl. Anggrek No. 10", phone: "0812-3456-7890" },
-  { id: 2, name: "Siti Khodijah",       nik: "3271014103800003", pokja: 1, position: "Anggota",    address: "Jl. Melati No. 5",   phone: "0813-5678-9012" },
-  { id: 3, name: "Fatimah",             nik: "3271014206850004", pokja: 1, position: "Anggota",    address: "Jl. Mawar No. 12",  phone: "0857-6789-0123" },
-  { id: 4, name: "Endang Pratiwi",      nik: "3271014307900005", pokja: 2, position: "Ketua",      address: "Jl. Kenanga No. 8", phone: "0812-7890-1234" },
-  { id: 5, name: "Rina Hayati",         nik: "3271014408950006", pokja: 2, position: "Sekretaris", address: "Jl. Dahlia No. 3",  phone: "0813-8901-2345" },
-  { id: 6, name: "Sri Rahayu",          nik: "3271014512000007", pokja: 2, position: "Anggota",    address: "Jl. Flamboyan No. 7", phone: "0856-9012-3456" },
-  { id: 7, name: "Rohani Dewi",         nik: "3271014601050008", pokja: 3, position: "Ketua",      address: "Jl. Cempaka No. 15", phone: "0812-0123-4567" },
-  { id: 8, name: "Kartini",             nik: "3271014702100009", pokja: 3, position: "Bendahara",  address: "Jl. Bougenville No. 2", phone: "0813-1234-5678" },
-  { id: 9, name: "Sumiyati",            nik: "3271014803150010", pokja: 3, position: "Anggota",    address: "Jl. Kamboja No. 9", phone: "0857-2345-6789" },
-  { id: 10, name: "Ratna Sari",         nik: "3271014904200011", pokja: 4, position: "Ketua",      address: "Jl. Teratai No. 4", phone: "0812-3456-7891" },
-  { id: 11, name: "Dewi Lestari",       nik: "3271015005250012", pokja: 4, position: "Sekretaris", address: "Jl. Seruni No. 6",  phone: "0813-4567-8901" },
-  { id: 12, name: "Wahyuningsih",       nik: "3271015106300013", pokja: 4, position: "Anggota",    address: "Jl. Tulip No. 11",  phone: "0856-5678-9012" },
+export const initialPKKMembers: PKKMember[] = [];
+export const initialInventory: InventoryItem[] = [
+  // Standalone items
+  { id: 1, nama_barang: 'Papan Data PKK', asal_barang: '', jumlah: 1, tempat_penyimpanan: 'Kantor Desa', kondisi_barang: 'Bagus', children: [] },
+  { id: 2, nama_barang: 'Papan 10 Program Pokok', asal_barang: '', jumlah: 1, tempat_penyimpanan: 'Sda', kondisi_barang: 'Bagus', children: [] },
+  { id: 3, nama_barang: 'Piring', asal_barang: '', jumlah: 25, tempat_penyimpanan: 'Sda', kondisi_barang: 'Berkurang', children: [] },
+  { id: 4, nama_barang: 'Sendok', asal_barang: '', jumlah: 24, tempat_penyimpanan: 'Sda', kondisi_barang: 'Berkurang', children: [] },
+  { id: 5, nama_barang: 'Piring Kue', asal_barang: '', jumlah: 6, tempat_penyimpanan: 'Sda', kondisi_barang: 'Berkurang', children: [] },
+  { id: 6, nama_barang: 'Gelas', asal_barang: '', jumlah: 24, tempat_penyimpanan: 'Sda', kondisi_barang: 'Berkurang', children: [] },
+  { id: 7, nama_barang: 'Cangkir', asal_barang: '', jumlah: 12, tempat_penyimpanan: 'Sda', kondisi_barang: 'Berkurang', children: [] },
+  { id: 8, nama_barang: 'Mangkok', asal_barang: '', jumlah: 12, tempat_penyimpanan: 'Sda', kondisi_barang: 'Berkurang', children: [] },
+  { id: 9, nama_barang: 'Piala', asal_barang: '', jumlah: 9, tempat_penyimpanan: 'Kantor PKK', kondisi_barang: 'Bagus', children: [] },
+  { id: 10, nama_barang: 'Blender', asal_barang: '', jumlah: 1, tempat_penyimpanan: 'Sda', kondisi_barang: 'Bagus', children: [] },
+
+  // Buku Sekretariat (+ 13 sub-buku di bawahnya)
+  { id: 11, nama_barang: 'Buku Sekretariat', asal_barang: '', jumlah: 1, tempat_penyimpanan: 'Sda', kondisi_barang: 'Bagus', children: [
+    { id: 12, nama_barang: '1. Bk Kader & TP PKK', asal_barang: '', jumlah: 1, tempat_penyimpanan: 'Sda', kondisi_barang: 'Bagus' },
+    { id: 13, nama_barang: '2. Bk. Agenda Surat', asal_barang: '', jumlah: 1, tempat_penyimpanan: 'Sda', kondisi_barang: 'Bagus' },
+    { id: 14, nama_barang: '3. Bk. Kas Umum', asal_barang: '', jumlah: 1, tempat_penyimpanan: 'Sda', kondisi_barang: 'Bagus' },
+    { id: 15, nama_barang: '4. Bk. Kas harian', asal_barang: '', jumlah: 1, tempat_penyimpanan: 'Sda', kondisi_barang: 'Bagus' },
+    { id: 16, nama_barang: '5. Bk. Kas Notulen', asal_barang: '', jumlah: 1, tempat_penyimpanan: 'Sda', kondisi_barang: 'Bagus' },
+    { id: 17, nama_barang: '6. Bk. Inventaris', asal_barang: '', jumlah: 1, tempat_penyimpanan: 'Sda', kondisi_barang: 'Bagus' },
+    { id: 18, nama_barang: '7. Bk Kegiatan', asal_barang: '', jumlah: 1, tempat_penyimpanan: 'Sda', kondisi_barang: 'Bagus' },
+    { id: 19, nama_barang: '8. Bk. Ekspedisi', asal_barang: '', jumlah: 1, tempat_penyimpanan: 'Sda', kondisi_barang: 'Bagus' },
+    { id: 20, nama_barang: '9. Bk. Daftar Hadir', asal_barang: '', jumlah: 1, tempat_penyimpanan: 'Sda', kondisi_barang: 'Bagus' },
+    { id: 21, nama_barang: '10. Bk. Harian Piket', asal_barang: '', jumlah: 1, tempat_penyimpanan: 'Sda', kondisi_barang: 'Bagus' },
+    { id: 22, nama_barang: '11. Bk. Tamu', asal_barang: '', jumlah: 1, tempat_penyimpanan: 'Sda', kondisi_barang: 'Bagus' },
+    { id: 23, nama_barang: '12. Bk. Program Kerja jangka 5 tahun', asal_barang: '', jumlah: 1, tempat_penyimpanan: 'Sda', kondisi_barang: 'Bagus' },
+    { id: 25, nama_barang: '13. Bk. Kegiatan Tahunan', asal_barang: '', jumlah: 0, tempat_penyimpanan: 'Sda', kondisi_barang: '' },
+  ] },
+
+  // Buku Pokja I (+ 9 sub-buku)
+  { id: 26, nama_barang: 'Buku Pokja I', asal_barang: '', jumlah: 1, tempat_penyimpanan: 'Sda', kondisi_barang: 'Bagus', children: [
+    { id: 27, nama_barang: '1. Bk. Program Kerja jangka 5 tahun', asal_barang: '', jumlah: 0, tempat_penyimpanan: 'Sda', kondisi_barang: '' },
+    { id: 29, nama_barang: '2. Bk. kegiatan Tahunan', asal_barang: '', jumlah: 1, tempat_penyimpanan: 'Sda', kondisi_barang: 'Bagus' },
+    { id: 30, nama_barang: '3. Bk. Kegiatan', asal_barang: '', jumlah: 1, tempat_penyimpanan: 'Sda', kondisi_barang: 'Bagus' },
+    { id: 31, nama_barang: '4. Bk.Data kegiatan', asal_barang: '', jumlah: 1, tempat_penyimpanan: 'Sda', kondisi_barang: 'Bagus' },
+    { id: 32, nama_barang: '5. Bk. Data Anak Asuh', asal_barang: '', jumlah: 1, tempat_penyimpanan: 'Sda', kondisi_barang: 'Bagus' },
+    { id: 33, nama_barang: '6. Bk. Data Anak Yatim Piatu', asal_barang: '', jumlah: 1, tempat_penyimpanan: 'Sda', kondisi_barang: 'Bagus' },
+    { id: 34, nama_barang: '7. Bk. Kegiatan Sosial', asal_barang: '', jumlah: 1, tempat_penyimpanan: 'Sda', kondisi_barang: 'Bagus' },
+    { id: 35, nama_barang: '8. Bk. Data tempat Ibadah', asal_barang: '', jumlah: 1, tempat_penyimpanan: 'Sda', kondisi_barang: 'Bagus' },
+    { id: 36, nama_barang: '9. Bk. Susunan pengurus', asal_barang: '', jumlah: 0, tempat_penyimpanan: 'Sda', kondisi_barang: '' },
+  ] },
+
+  // Buku Pokja II (+ 14 sub-buku)
+  { id: 37, nama_barang: 'Buku Pokja II', asal_barang: '', jumlah: 1, tempat_penyimpanan: 'Sda', kondisi_barang: 'Bagus', children: [
+    { id: 38, nama_barang: '1. Bk. Prog Kerja 5 Tahun', asal_barang: '', jumlah: 1, tempat_penyimpanan: 'Sda', kondisi_barang: 'Bagus' },
+    { id: 39, nama_barang: '2. Bk. Kegiatan Tahunan', asal_barang: '', jumlah: 1, tempat_penyimpanan: 'Sda', kondisi_barang: 'Bagus' },
+    { id: 40, nama_barang: '3. Bk. Kegiatan', asal_barang: '', jumlah: 1, tempat_penyimpanan: 'Sda', kondisi_barang: 'Bagus' },
+    { id: 41, nama_barang: '4. Bk. Data Keg PKK', asal_barang: '', jumlah: 1, tempat_penyimpanan: 'Sda', kondisi_barang: 'Bagus' },
+    { id: 42, nama_barang: '5. Bk. Pelaks Prog Kerja', asal_barang: '', jumlah: 1, tempat_penyimpanan: 'Sda', kondisi_barang: 'Bagus' },
+    { id: 43, nama_barang: '6. Buku Notulen', asal_barang: '', jumlah: 1, tempat_penyimpanan: 'Sda', kondisi_barang: 'Bagus' },
+    { id: 44, nama_barang: '7. Buku Data TK PKK', asal_barang: '', jumlah: 1, tempat_penyimpanan: 'Sda', kondisi_barang: 'Bagus' },
+    { id: 45, nama_barang: '8. Bk. Data Guru TK PKK', asal_barang: '', jumlah: 1, tempat_penyimpanan: 'Sda', kondisi_barang: 'Bagus' },
+    { id: 46, nama_barang: '9. Bk. Data BKB', asal_barang: '', jumlah: 1, tempat_penyimpanan: 'Sda', kondisi_barang: 'Bagus' },
+    { id: 47, nama_barang: '10. Bk. Pengemb. GerBKB', asal_barang: '', jumlah: 1, tempat_penyimpanan: 'Sda', kondisi_barang: 'Bagus' },
+    { id: 48, nama_barang: '11. Bk. Kader TP PKK Ds', asal_barang: '', jumlah: 1, tempat_penyimpanan: 'Sda', kondisi_barang: 'Bagus' },
+    { id: 49, nama_barang: '12. Bk. Koperasi', asal_barang: '', jumlah: 1, tempat_penyimpanan: 'Sda', kondisi_barang: 'Bagus' },
+    { id: 50, nama_barang: '13. Bk. Susunan pengurus', asal_barang: '', jumlah: 1, tempat_penyimpanan: 'Sda', kondisi_barang: 'Bagus' },
+    { id: 51, nama_barang: '14. Bk. Daftar Hadir Keg.', asal_barang: '', jumlah: 0, tempat_penyimpanan: 'Sda', kondisi_barang: '' },
+  ] },
+
+  // Buku Pokja III (+ 15 sub-buku)
+  { id: 52, nama_barang: 'Buku Pokja III', asal_barang: '', jumlah: 1, tempat_penyimpanan: 'Sda', kondisi_barang: 'Bagus', children: [
+    { id: 53, nama_barang: '1. Bk. Prog Kerja 5 Tahun', asal_barang: '', jumlah: 1, tempat_penyimpanan: 'Sda', kondisi_barang: 'Bagus' },
+    { id: 54, nama_barang: '2. Bk. Kegiatan Tahunan', asal_barang: '', jumlah: 1, tempat_penyimpanan: 'Sda', kondisi_barang: 'Bagus' },
+    { id: 55, nama_barang: '3. Bk. Kegiatan', asal_barang: '', jumlah: 1, tempat_penyimpanan: 'Sda', kondisi_barang: 'Bagus' },
+    { id: 56, nama_barang: '4. Bk. Data kegiatan', asal_barang: '', jumlah: 1, tempat_penyimpanan: 'Sda', kondisi_barang: 'Bagus' },
+    { id: 57, nama_barang: '5. Bk. Susunan pengurus', asal_barang: '', jumlah: 1, tempat_penyimpanan: 'Sda', kondisi_barang: 'Bagus' },
+    { id: 58, nama_barang: '6. Bk Data Kader', asal_barang: '', jumlah: 1, tempat_penyimpanan: 'Sda', kondisi_barang: 'Bagus' },
+    { id: 59, nama_barang: '7. Bk Penyuluhan lingk. Hdp', asal_barang: '', jumlah: 1, tempat_penyimpanan: 'Sda', kondisi_barang: 'Bagus' },
+    { id: 60, nama_barang: '8. Bk Industri Rmh. tangga', asal_barang: '', jumlah: 1, tempat_penyimpanan: 'Sda', kondisi_barang: 'Bagus' },
+    { id: 61, nama_barang: '9. Bk. Data Lomba', asal_barang: '', jumlah: 1, tempat_penyimpanan: 'Sda', kondisi_barang: 'Bagus' },
+    { id: 62, nama_barang: '10. Bk. Bantuan', asal_barang: '', jumlah: 1, tempat_penyimpanan: 'Sda', kondisi_barang: 'Bagus' },
+    { id: 63, nama_barang: '11. Bk. Inventaris Toga', asal_barang: '', jumlah: 1, tempat_penyimpanan: 'Sda', kondisi_barang: 'Bagus' },
+    { id: 64, nama_barang: '12. Bk Penanaman', asal_barang: '', jumlah: 1, tempat_penyimpanan: 'Sda', kondisi_barang: 'Bagus' },
+    { id: 65, nama_barang: '13. Bk. Pemanfaatan', asal_barang: '', jumlah: 1, tempat_penyimpanan: 'Sda', kondisi_barang: 'Bagus' },
+    { id: 66, nama_barang: '14. Bk. Jadwal Piket', asal_barang: '', jumlah: 1, tempat_penyimpanan: 'Sda', kondisi_barang: 'Bagus' },
+    { id: 67, nama_barang: '15. Bk. Tamu', asal_barang: '', jumlah: 0, tempat_penyimpanan: 'Sda', kondisi_barang: '' },
+  ] },
+
+  // Buku Pokja IV (+ 17 sub-buku)
+  { id: 68, nama_barang: 'Buku Pokja IV', asal_barang: '', jumlah: 1, tempat_penyimpanan: 'Sda', kondisi_barang: 'Bagus', children: [
+    { id: 69, nama_barang: '1. Bk. Prog Kerja 5 Thn', asal_barang: '', jumlah: 1, tempat_penyimpanan: 'Sda', kondisi_barang: 'Bagus' },
+    { id: 70, nama_barang: '2. Bk. Kegiatan Tahunan', asal_barang: '', jumlah: 1, tempat_penyimpanan: 'Sda', kondisi_barang: 'Bagus' },
+    { id: 71, nama_barang: '3. Bk. Kegiatan', asal_barang: '', jumlah: 1, tempat_penyimpanan: 'Sda', kondisi_barang: 'Bagus' },
+    { id: 72, nama_barang: '4. Bk. Data Kegiatan', asal_barang: '', jumlah: 1, tempat_penyimpanan: 'Sda', kondisi_barang: 'Bagus' },
+    { id: 73, nama_barang: '5. Bk. Data PIN', asal_barang: '', jumlah: 1, tempat_penyimpanan: 'Sda', kondisi_barang: 'Bagus' },
+    { id: 74, nama_barang: '6. Bk. Data GSI', asal_barang: '', jumlah: 1, tempat_penyimpanan: 'Sda', kondisi_barang: 'Bagus' },
+    { id: 75, nama_barang: '7. Bk. Program PSN', asal_barang: '', jumlah: 1, tempat_penyimpanan: 'Sda', kondisi_barang: 'Bagus' },
+    { id: 76, nama_barang: '8. Bk. Kegiatan Posyandu', asal_barang: '', jumlah: 1, tempat_penyimpanan: 'Sda', kondisi_barang: 'Bagus' },
+    { id: 77, nama_barang: '9. Bk. Jml Pengunjung', asal_barang: '', jumlah: 1, tempat_penyimpanan: 'Sda', kondisi_barang: 'Bagus' },
+    { id: 78, nama_barang: 'petugas posyandu / jml.', asal_barang: '', jumlah: 1, tempat_penyimpanan: 'Sda', kondisi_barang: 'Bagus' },
+    { id: 79, nama_barang: 'bayi lahir & meninggal', asal_barang: '', jumlah: 1, tempat_penyimpanan: 'Sda', kondisi_barang: 'Bagus' },
+    { id: 80, nama_barang: '10. Bk. Dana sehat', asal_barang: '', jumlah: 1, tempat_penyimpanan: 'Sda', kondisi_barang: 'Bagus' },
+    { id: 81, nama_barang: 'a. Buku pengurus', asal_barang: '', jumlah: 1, tempat_penyimpanan: 'Sda', kondisi_barang: 'Bagus' },
+    { id: 82, nama_barang: 'b. Buku penyumbang', asal_barang: '', jumlah: 1, tempat_penyimpanan: 'Sda', kondisi_barang: 'Bagus' },
+    { id: 83, nama_barang: 'c. Bk Penerima sumbangan', asal_barang: '', jumlah: 1, tempat_penyimpanan: 'Sda', kondisi_barang: 'Bagus' },
+    { id: 84, nama_barang: '11. Bk.Daftar Hadir Keg.', asal_barang: '', jumlah: 1, tempat_penyimpanan: 'Sda', kondisi_barang: 'Bagus' },
+    { id: 85, nama_barang: '12. Bk.Susunan pengurus', asal_barang: '', jumlah: 0, tempat_penyimpanan: 'Sda', kondisi_barang: '' },
+  ] },
+];
+export const initialSurat: SuratItem[] = [
+  { id: 1, type: 'masuk', tanggal_terima: '10 Januari 2025', tanggal_surat: '10 Januari 2025', nomor_surat: '02/SKR/PKK KEC/I/2025', asal_surat_dari: 'TP PKK KEC PAKIS', perihal: 'Undangan Sosialisasi Program Kerja Bidang Umum Dan Bimtek E-PKK', lampiran: '', diteruskan_kepada: 'TP PKK DESA' },
+  { id: 2, type: 'masuk', tanggal_terima: '21-Apr-25', tanggal_surat: '21-Apr-25', nomor_surat: '15/SKR/PKK KEC/IV/2025', asal_surat_dari: 'TP PKK KEC PAKIS', perihal: 'Undangan Silaturahmi Halal Bi Halal Majelis Taklim Khoirunnisa Al Wardah', lampiran: '', diteruskan_kepada: 'TP PKK DESA' },
+  { id: 3, type: 'masuk', tanggal_terima: '16 Mei 2025', tanggal_surat: '16 Mei 2025', nomor_surat: '23/SKR/PKK KEC/V/2025', asal_surat_dari: 'TP PKK KEC PAKIS', perihal: 'Undangan Sosialisasi Bahaya Narkoba', lampiran: '', diteruskan_kepada: 'TP PKK DESA' },
+  { id: 4, type: 'masuk', tanggal_terima: '13 Juni 2025', tanggal_surat: '13 Juni 2025', nomor_surat: '25/SKR/PKK KEC/VI/2025', asal_surat_dari: 'TP PKK KEC PAKIS', perihal: 'Undangan Sosialisasi Gerakan Penanaman Pohon Dilingkungan Sekitar', lampiran: '', diteruskan_kepada: 'TP PKK DESA' },
+  { id: 5, type: 'masuk', tanggal_terima: '30 Juni 2025', tanggal_surat: '30 Juni 2025', nomor_surat: '28/SKR/PKK KEC/ VI/2025', asal_surat_dari: 'TP PKK KEC PAKIS', perihal: 'Pemberitahuan Kegiatan Peningkatan Kapasitas Kader Pkk Ke Desa Madiredo Kecamatan Pujon', lampiran: '', diteruskan_kepada: 'TP PKK DESA' },
+  { id: 6, type: 'masuk', tanggal_terima: '21 Juli  2025', tanggal_surat: '21 Juli  2025', nomor_surat: '31/SKR/PKK KEC/VII/2025', asal_surat_dari: 'TP PKK KEC PAKIS', perihal: 'Undangan Sosialisasi Pengelolaan Usaha Mikro (Up2k) Dan Pembinaan Tk Pkk', lampiran: '', diteruskan_kepada: 'TP PKK DESA' },
+  { id: 7, type: 'masuk', tanggal_terima: '18 Agustus  2025', tanggal_surat: '18 Agustus  2025', nomor_surat: '34/SKR/PKK KEC/VIII/2025', asal_surat_dari: 'TP PKK KEC PAKIS', perihal: 'Undangan Majelis Taklim Khoirunnisa Al Wardah', lampiran: '', diteruskan_kepada: 'TP PKK DESA' },
+  { id: 8, type: 'masuk', tanggal_terima: '11-Sept-25', tanggal_surat: '11-Sept-25', nomor_surat: '36/SKR/PKK KEC/IX/2025', asal_surat_dari: 'TP PKK KEC PAKIS', perihal: 'Pemberitahuan Pelaksanaan Kegiatan Lomba Kelompok ASMANTOGA tingkat Kecamatan Pakis Tahun 2025', lampiran: '', diteruskan_kepada: 'TP PKK DESA' },
+  { id: 9, type: 'masuk', tanggal_terima: '18-Sept-25', tanggal_surat: '18-Sept-25', nomor_surat: '37/SKR/PKK KEC/IX/2025', asal_surat_dari: 'TP PKK KEC PAKIS', perihal: 'Undangan Pelatihan Pembuatan Keset Untuk Lansia', lampiran: '', diteruskan_kepada: 'TP PKK DESA' },
+  { id: 10, type: 'masuk', tanggal_terima: '25-Sept-25', tanggal_surat: '25-Sept-25', nomor_surat: '38/SKR/PKK KEC/IX/2025', asal_surat_dari: 'TP PKK KEC PAKIS', perihal: 'Undangan Sosialisasi Program Prioritas Gerakan PKK Kabupaten Malang', lampiran: '', diteruskan_kepada: 'TP PKK DESA' },
+  { id: 11, type: 'masuk', tanggal_terima: '11-Nov-25', tanggal_surat: '11-Nov-25', nomor_surat: '40/SKR/PKK KEC/XI/2025', asal_surat_dari: 'TP PKK KEC PAKIS', perihal: 'Undangan Workshop Bisnis dengan tema "Transformasi Bisnis dengan Artifisial Intelegen/AI (kecerdasan Buatan, Inovasi untuk ekonomi Keluarga" di Pendopo Kabupaten malang', lampiran: '', diteruskan_kepada: 'TP PKK DESA' },
+  { id: 12, type: 'masuk', tanggal_terima: '20-Nov-25', tanggal_surat: '20-Nov-25', nomor_surat: '41/SKR/PKK KEC/XI/2025', asal_surat_dari: 'TP PKK KEC PAKIS', perihal: 'Undangan Sosialisasi desa Iklim dari UPT puskesmas Pakis, Sosialisasi Pengolahan sampah organik dan An organik melalui bank sampah, Sosialisasi Gerakan selamatkan Pangan dan penanganan Food loss dan Food Waste (susut pangan dan sisa pangan)', lampiran: '', diteruskan_kepada: 'TP PKK DESA' },
 ];
 
 export interface AppState {
@@ -398,6 +504,11 @@ export interface AppState {
     error: string;
   } | null;
   confirmDelete: { userId: string } | null;
+  postModal: {
+    mode: "add" | "edit";
+    editId: string | number | null;
+    form: { title: string; excerpt: string; content: string; category: string };
+  } | null;
   galFilter: number | "all";
   rf: { name: string; contact: string; category: string; desc: string };
   toast: string | null;
@@ -407,7 +518,13 @@ export interface AppState {
   files: FileItem[];
   reports: ReportItem[];
   pkkMembers: PKKMember[];
+  inventory: InventoryItem[];
+  surat: SuratItem[];
+  suratView: 'masuk' | 'keluar';
   blogPosts: BlogPost[];
+  orgPositions: OrgPosition[];
+  pengumuman: PengumumanItem[];
+  viewingPost: BlogPost | null;
 }
 
 export const initialState: AppState = {
@@ -431,6 +548,7 @@ export const initialState: AppState = {
   avatarPreview: null,
   userModal: null,
   confirmDelete: null,
+  postModal: null,
   galFilter: "all",
   rf: {
     name: "",
@@ -445,7 +563,38 @@ export const initialState: AppState = {
   files: [],
   reports: [],
   pkkMembers: initialPKKMembers,
+  inventory: initialInventory,
+  surat: initialSurat,
+  suratView: 'masuk',
   blogPosts: [],
+  orgPositions: [],
+  pengumuman: [
+    {
+      id: 0,
+      image: "data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22400%22%20height%3D%22600%22%3E%3Crect%20fill%3D%22%23ff6b6b%22%20width%3D%22400%22%20height%3D%22600%22%2F%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2250%25%22%20fill%3D%22white%22%20font-size%3D%2224%22%20font-weight%3D%22bold%22%20text-anchor%3D%22middle%22%20dominant-baseline%3D%22middle%22%3EKegiatan%20Sosialisasi%20PKK%3C%2Ftext%3E%3C%2Fsvg%3E",
+      caption: "Kegiatan Sosialisasi PKK",
+      expires_at: "2027-06-30T23:59",
+      created_at: "2026-06-01T08:00:00.000Z",
+      created_by: "Admin",
+    },
+    {
+      id: 1,
+      image: "data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22400%22%20height%3D%22600%22%3E%3Crect%20fill%3D%22%234ecdc4%22%20width%3D%22400%22%20height%3D%22600%22%2F%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2250%25%22%20fill%3D%22white%22%20font-size%3D%2224%22%20font-weight%3D%22bold%22%20text-anchor%3D%22middle%22%20dominant-baseline%3D%22middle%22%3EPendaftaran%20Anggota%20Baru%3C%2Ftext%3E%3C%2Fsvg%3E",
+      caption: "Pendaftaran Anggota Baru",
+      expires_at: "2027-07-15T23:59",
+      created_at: "2026-06-05T10:30:00.000Z",
+      created_by: "Admin",
+    },
+    {
+      id: 2,
+      image: "data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22400%22%20height%3D%22600%22%3E%3Crect%20fill%3D%22%23ffd93d%22%20width%3D%22400%22%20height%3D%22600%22%2F%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2250%25%22%20fill%3D%22white%22%20font-size%3D%2224%22%20font-weight%3D%22bold%22%20text-anchor%3D%22middle%22%20dominant-baseline%3D%22middle%22%3ERapat%20Koordinasi%20Bulanan%3C%2Ftext%3E%3C%2Fsvg%3E",
+      caption: "Rapat Koordinasi Bulanan",
+      expires_at: "2027-08-01T23:59",
+      created_at: "2026-06-10T14:00:00.000Z",
+      created_by: "Admin",
+    },
+  ],
+  viewingPost: null,
 };
 
 export type AppAction =
@@ -520,9 +669,38 @@ export type AppAction =
         files: FileItem[];
         reports: ReportItem[];
         pkkMembers: PKKMember[];
+        inventory: InventoryItem[];
+        surat: SuratItem[];
         blogPosts: BlogPost[];
+        orgPositions: OrgPosition[];
+        pengumuman: PengumumanItem[];
       };
     }
+  | { type: "SET_ORG_POSITIONS"; payload: OrgPosition[] }
+  | { type: "SET_POST_MODAL"; payload: AppState["postModal"] }
+  | { type: "SET_POST_FORM"; payload: Partial<{ title: string; excerpt: string; content: string; category: string }> }
+  | { type: "SET_BLOG_POSTS"; payload: BlogPost[] }
+  | { type: "ADD_BLOG_POST"; payload: BlogPost }
+  | { type: "UPDATE_BLOG_POST"; payload: BlogPost }
+  | { type: "DELETE_BLOG_POST"; payload: string | number }
+  | { type: "SET_VIEWING_POST"; payload: BlogPost | null }
+  | { type: "ADD_PKK_MEMBER"; payload: PKKMember }
+  | { type: "UPDATE_PKK_MEMBER"; payload: PKKMember }
+  | { type: "DELETE_PKK_MEMBER"; payload: string | number }
+  | { type: "SET_INVENTORY"; payload: InventoryItem[] }
+  | { type: "ADD_INVENTORY"; payload: InventoryItem }
+  | { type: "UPDATE_INVENTORY"; payload: InventoryItem }
+  | { type: "DELETE_INVENTORY"; payload: string | number }
+  | { type: "ADD_INVENTORY_CHILD"; payload: { parentId: string | number; item: InventoryItem } }
+  | { type: "SET_SURAT"; payload: SuratItem[] }
+  | { type: "ADD_SURAT"; payload: SuratItem }
+  | { type: "UPDATE_SURAT"; payload: SuratItem }
+  | { type: "DELETE_SURAT"; payload: string | number }
+  | { type: "SET_SURAT_VIEW"; payload: 'masuk' | 'keluar' }
+  | { type: "SET_PENGUMUMAN"; payload: PengumumanItem[] }
+  | { type: "ADD_PENGUMUMAN"; payload: PengumumanItem }
+  | { type: "UPDATE_PENGUMUMAN"; payload: PengumumanItem }
+  | { type: "DELETE_PENGUMUMAN"; payload: string | number }
   | { type: "SET_TOAST"; payload: string | null };
 
 export function reducer(state: AppState, action: AppAction): AppState {
@@ -713,8 +891,91 @@ export function reducer(state: AppState, action: AppAction): AppState {
         files: action.payload.files,
         reports: action.payload.reports,
         pkkMembers: action.payload.pkkMembers,
+        surat: action.payload.surat.length ? action.payload.surat : state.surat,
+        inventory: action.payload.inventory.length ? action.payload.inventory : state.inventory,
         blogPosts: action.payload.blogPosts,
+        orgPositions: action.payload.orgPositions,
+        pengumuman: action.payload.pengumuman.length ? action.payload.pengumuman : state.pengumuman,
       };
+    case "SET_ORG_POSITIONS":
+      return { ...state, orgPositions: action.payload };
+    case "SET_POST_MODAL":
+      return { ...state, postModal: action.payload };
+    case "SET_POST_FORM":
+      return state.postModal ? { ...state, postModal: { ...state.postModal, form: { ...state.postModal.form, ...action.payload } } } : state;
+    case "SET_BLOG_POSTS":
+      return { ...state, blogPosts: action.payload };
+    case "ADD_BLOG_POST":
+      return { ...state, blogPosts: [action.payload, ...state.blogPosts] };
+    case "UPDATE_BLOG_POST":
+      return { ...state, blogPosts: state.blogPosts.map(p => p.id === action.payload.id ? action.payload : p) };
+    case "DELETE_BLOG_POST":
+      return { ...state, blogPosts: state.blogPosts.filter(p => p.id !== action.payload) };
+    case "SET_VIEWING_POST":
+      return { ...state, viewingPost: action.payload };
+    case "ADD_PKK_MEMBER":
+      return { ...state, pkkMembers: [...state.pkkMembers, action.payload], nextId: state.nextId + 1 };
+    case "UPDATE_PKK_MEMBER":
+      return { ...state, pkkMembers: state.pkkMembers.map(m => m.id === action.payload.id ? action.payload : m) };
+    case "DELETE_PKK_MEMBER":
+      return { ...state, pkkMembers: state.pkkMembers.filter(m => m.id !== action.payload) };
+    case "SET_INVENTORY":
+      return { ...state, inventory: action.payload };
+    case "ADD_INVENTORY":
+      return { ...state, inventory: [...state.inventory, { ...action.payload, children: [] }], nextId: state.nextId + 1 };
+    case "UPDATE_INVENTORY": {
+      const p = action.payload;
+      function updTree(list: InventoryItem[]): InventoryItem[] {
+        return list.map(m => {
+          if (m.id === p.id) return { ...p, children: m.children };
+          if (m.children) return { ...m, children: updTree(m.children) };
+          return m;
+        });
+      }
+      return { ...state, inventory: updTree(state.inventory) };
+    }
+    case "DELETE_INVENTORY": {
+      const id = action.payload;
+      function delTree(list: InventoryItem[]): InventoryItem[] {
+        return list.filter(m => {
+          if (m.id === id) return false;
+          if (m.children) m.children = delTree(m.children);
+          return true;
+        });
+      }
+      return { ...state, inventory: delTree(state.inventory) };
+    }
+    case "ADD_INVENTORY_CHILD": {
+      const payload = action.payload;
+      function addChildTree(list: InventoryItem[]): InventoryItem[] {
+        return list.map(m => {
+          if (m.id === payload.parentId) {
+            return { ...m, children: [...(m.children || []), payload.item] };
+          }
+          if (m.children) return { ...m, children: addChildTree(m.children) };
+          return m;
+        });
+      }
+      return { ...state, inventory: addChildTree(state.inventory), nextId: state.nextId + 1 };
+    }
+    case "SET_SURAT":
+      return { ...state, surat: action.payload };
+    case "ADD_SURAT":
+      return { ...state, surat: [...state.surat, action.payload], nextId: state.nextId + 1 };
+    case "UPDATE_SURAT":
+      return { ...state, surat: state.surat.map(m => m.id === action.payload.id ? action.payload : m) };
+    case "DELETE_SURAT":
+      return { ...state, surat: state.surat.filter(m => m.id !== action.payload) };
+    case "SET_SURAT_VIEW":
+      return { ...state, suratView: action.payload };
+    case "SET_PENGUMUMAN":
+      return { ...state, pengumuman: action.payload };
+    case "ADD_PENGUMUMAN":
+      return { ...state, pengumuman: [...(state.pengumuman || []), action.payload], nextId: state.nextId + 1 };
+    case "UPDATE_PENGUMUMAN":
+      return { ...state, pengumuman: (state.pengumuman || []).map(p => p.id === action.payload.id ? action.payload : p) };
+    case "DELETE_PENGUMUMAN":
+      return { ...state, pengumuman: (state.pengumuman || []).filter(p => p.id !== action.payload) };
     case "SET_TOAST":
       return { ...state, toast: action.payload };
     default:
@@ -731,7 +992,7 @@ export function rlabel(u: User | null): string {
 }
 
 export function raccent(u: User | null): string {
-  if (!u || u.role === "admin") return "#16331f";
+  if (!u || u.role === "admin") return "#0f172a";
   const p = POKJA.find((x) => x.id === u.pokja);
   return p ? p.accent : "#2c9a55";
 }

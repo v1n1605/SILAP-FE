@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "SILAP — Sistem Informasi Layanan Program Desa",
-  description: "Sistem Informasi Layanan Program Desa Bunutwetan",
+  title: "PENDESA-P3S — Sistem Informasi Penguatan Desa Modul P3S Bunutwetan",
+  description: "Sistem Informasi Penguatan Desa Modul P3S Bunutwetan",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -12,9 +12,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
       </head>
-      <body style={{ fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif", WebkitFontSmoothing: 'antialiased', color: '#1c2a21' }}>{children}</body>
+      <body style={{ fontFamily: "'Inter', system-ui, sans-serif", WebkitFontSmoothing: 'antialiased', color: '#1e293b' }}>{children}</body>
     </html>
   );
 }

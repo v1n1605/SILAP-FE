@@ -1,6 +1,6 @@
 import { AppState, rlabel, raccent, rinit, canEditPokja, makeAvatarStyle } from './state';
 import { POKJA, MONTHS, MONTH_ABBR, STATUS, EXT_TINT } from './constants';
-import type { User, BlogPost } from './types';
+import type { User, BlogPost, OrgPosition, InventoryItem, SuratItem, PengumumanItem } from './types';
 
 export interface DerivedData {
   u: User | null;
@@ -27,7 +27,13 @@ export interface DerivedData {
   allUsers: any[];
   pokjaMemberList: any[];
   pkkMembers: any[];
+  inventory: any[];
+  suratMasuk: any[];
+  suratKeluar: any[];
+  suratView: 'masuk' | 'keluar';
   blogPosts: BlogPost[];
+  orgPositions: OrgPosition[];
+  pengumuman: PengumumanItem[];
   umV: Record<string, any>;
   avM: { hasPreview: boolean; displayStyle: React.CSSProperties; displayInitial: string };
   cdUser: { name: string };
@@ -53,17 +59,17 @@ export function computeDerived(st: AppState, go: (r: string) => void, openPokja:
     heroImgH: isMob ? '220px' : '330px',
     heroTagMb: isMob ? '14px' : '22px',
     heroCapFont: isMob ? '15px' : '18px',
-    h1: isMob ? { fontSize: '32px', lineHeight: '1.08', letterSpacing: '-.025em', fontWeight: '800', color: '#14301d', marginBottom: '14px' } : { fontSize: '50px', lineHeight: '1.04', letterSpacing: '-.03em', fontWeight: '800', color: '#14301d', marginBottom: '18px' },
+    h1: isMob ? { fontSize: '32px', lineHeight: '1.08', letterSpacing: '-.025em', fontWeight: '800', color: '#0f172a', marginBottom: '14px' } : { fontSize: '50px', lineHeight: '1.04', letterSpacing: '-.03em', fontWeight: '800', color: '#0f172a', marginBottom: '18px' },
     bodyFont: isMob ? '15px' : '17px',
     btnFont: isMob ? '14px' : '15px',
     btnPad: isMob ? '12px 20px' : '14px 26px',
     featGrid: { display: 'grid', gridTemplateColumns: isMob ? '1fr 1fr' : 'repeat(3,1fr)', gap: isMob ? '12px' : '16px' },
     cardPad: isMob ? '16px' : '20px',
     sectionGap: isMob ? '28px' : '46px',
-    profilSec: { marginTop: isMob ? '28px' : '46px', display: 'grid', gridTemplateColumns: isMob ? '1fr' : '1fr 1fr', gap: isMob ? '16px' : '24px', background: '#fff', border: '1px solid #e3ebe1', borderRadius: '22px', padding: isMob ? '20px' : '30px' },
+    profilSec: { marginTop: isMob ? '28px' : '46px', display: 'grid', gridTemplateColumns: isMob ? '1fr' : '1fr 1fr', gap: isMob ? '16px' : '24px', background: '#fff', border: '1px solid #e2e8f0', padding: isMob ? '20px' : '30px' },
     profilH2: isMob ? '22px' : '26px',
     pokja4Grid: { display: 'grid', gridTemplateColumns: isMob ? '1fr 1fr' : 'repeat(4,1fr)', gap: isMob ? '12px' : '16px' },
-    pokjaOverview: { display: 'grid', gridTemplateColumns: isMob ? '1fr' : '1fr 1fr', gap: '16px' },
+    pokjaOverview: { display: 'grid', gridTemplateColumns: isMob ? '1fr' : '1fr 1fr', gap: isMob ? '16px' : '24px', alignItems: 'start' },
     pokjaCardH: isMob ? '15px' : '18px',
     h2: isMob ? '18px' : '21px',
     pageH1: isMob ? '26px' : '32px',
@@ -92,7 +98,7 @@ export function computeDerived(st: AppState, go: (r: string) => void, openPokja:
     return { caption: g.caption, tag: g.tag, pokjaName: p.name, accent: p.accent };
   });
   const hIdx = heroPhotos.length ? st.heroIdx % heroPhotos.length : 0;
-  const heroCurrent = heroPhotos[hIdx] || { caption: 'Dokumentasi kegiatan PKK', tag: 'foto kegiatan', pokjaName: 'PKK', accent: '#2c9a55' };
+  const heroCurrent = heroPhotos[hIdx] || { caption: 'Dokumentasi kegiatan PKK', tag: 'foto kegiatan', pokjaName: 'PKK', accent: '#2563eb' };
   const heroDots = heroPhotos.map((_, i) => ({ w: i === hIdx ? '22px' : '7px', bg: i === hIdx ? '#fff' : 'rgba(255,255,255,.5)' }));
 
   const userVals = u ? {
@@ -104,28 +110,31 @@ export function computeDerived(st: AppState, go: (r: string) => void, openPokja:
     scope: u.role === 'admin' ? 'Seluruh Pokja' : rlabel(u), isAdmin: u.role === 'admin', isKetua: u.role === 'ketua',
     accessNote: u.role === 'admin' ? 'Sebagai Admin Desa Anda dapat mengelola semua akun, kalender, galeri, berkas, dan status laporan.' : `Anda dapat mengedit kalender, galeri, dan berkas untuk ${rlabel(u).replace('Ketua ', '').replace('Anggota ', '')}. Pokja lain hanya dapat dilihat.`,
   } : {
-    name: '', initial: '', roleLabel: '', chipColor: '#16331f',
-    avatarStyleSm: makeAvatarStyle(null, '#16331f', '30px', '12px', ''),
+    name: '', initial: '', roleLabel: '', chipColor: '#0f172a',
+    avatarStyleSm: makeAvatarStyle(null, '#0f172a', '30px', '12px', ''),
     avatarInitialSm: '', avatarStyleLg: { width: '62px', height: '62px', borderRadius: '50%', background: 'rgba(255,255,255,.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px', fontWeight: '800', color: '#fff' },
     avatarInitialLg: '', scope: '', isAdmin: false, isKetua: false, accessNote: '',
   };
 
   const navDef = [
     { key: 'beranda', label: 'Beranda', route: 'beranda' },
-    { key: 'pokja', label: 'Pokja', route: 'pokja' },
+    { key: 'pokja', label: 'PKK', route: 'pokja' },
     { key: 'galeri', label: 'Galeri', route: 'galeri' },
+    { key: 'pengumuman', label: 'Pengumuman', route: 'pengumuman' },
     { key: 'inovasi', label: 'Inovasi', route: 'inovasi' },
     { key: 'laporan', label: 'Laporan', route: 'laporan' },
   ];
   if (u) navDef.push({ key: 'dashboard', label: 'Akun', route: 'dashboard' });
   if (u && u.role === 'admin') navDef.push({ key: 'anggota-pkk', label: 'Anggota PKK', route: 'anggota-pkk' });
+  if (u && u.role === 'admin') navDef.push({ key: 'inventaris', label: 'Inventaris', route: 'inventaris' });
+  if (u && u.role === 'admin') navDef.push({ key: 'surat', label: 'Surat', route: 'surat' });
   const activeRoute = st.route === 'detail' ? 'pokja' : st.route;
   const nav = navDef.map(n => ({
     label: n.label,
     onClick: () => go(n.route),
     onMobile: () => { go(n.route); dispatch({ type: 'TOGGLE_MENU' }); },
-    bg: activeRoute === n.route ? '#dff0e3' : 'transparent',
-    color: activeRoute === n.route ? '#1f7e44' : '#5d7263',
+    bg: activeRoute === n.route ? '#e0e7ff' : 'transparent',
+    color: activeRoute === n.route ? '#1e3a5f' : '#475569',
   }));
 
   const pokjas = POKJA.map(p => ({
@@ -137,12 +146,12 @@ export function computeDerived(st: AppState, go: (r: string) => void, openPokja:
   }));
 
   const features = [
-    { glyph: '▤', title: 'Profil Desa', desc: 'Data desa & pengurus TP PKK.', accent: '#2c9a55', tint: '#e3f3e8', onClick: () => go('beranda') },
-    { glyph: '◷', title: 'Kalender Kegiatan', desc: 'Agenda tiap pokja per bulan.', accent: '#3d7fd6', tint: '#e6effb', onClick: () => openPokja(1) },
-    { glyph: '▦', title: 'Galeri', desc: 'Dokumentasi seluruh pokja.', accent: '#d9952f', tint: '#fbf1de', onClick: () => go('galeri') },
-    { glyph: '✎', title: 'Laporan Warga', desc: 'Kirim laporan, rekap ke Excel.', accent: '#d05c84', tint: '#fbe7ee', onClick: () => go('laporan') },
-    { glyph: '⬓', title: 'Berkas Pokja', desc: 'Unggah & unduh dokumen.', accent: '#2c9a55', tint: '#e3f3e8', onClick: () => openPokja(1) },
-    { glyph: '⬚', title: '4 Kelompok Kerja', desc: 'Pokja I–IV PKK desa.', accent: '#3d7fd6', tint: '#e6effb', onClick: () => go('pokja') },
+    { glyph: '▤', title: 'Profil Desa', desc: 'Data desa & pengurus TP PKK.',     accent: '#2563eb', tint: '#eff6ff', onClick: () => go('beranda') },
+    { glyph: '◷', title: 'Kalender Kegiatan', desc: 'Agenda tiap pokja per bulan.', accent: '#7c3aed', tint: '#f3e8ff', onClick: () => openPokja(1) },
+    { glyph: '▦', title: 'Galeri', desc: 'Dokumentasi seluruh pokja.', accent: '#ea580c', tint: '#fff7ed', onClick: () => go('galeri') },
+    { glyph: '✎', title: 'Laporan Warga', desc: 'Kirim laporan, rekap ke Excel.', accent: '#0891b2', tint: '#ecfeff', onClick: () => go('laporan') },
+    { glyph: '⬓', title: 'Berkas Pokja', desc: 'Unggah & unduh dokumen.', accent: '#2563eb', tint: '#eff6ff', onClick: () => openPokja(1) },
+    { glyph: '⬚', title: '4 Kelompok Kerja', desc: 'Pokja I–IV PKK desa.', accent: '#7c3aed', tint: '#f3e8ff', onClick: () => go('pokja') },
   ];
 
   const tabs = [
@@ -154,8 +163,8 @@ export function computeDerived(st: AppState, go: (r: string) => void, openPokja:
     label: t.label,
     onClick: () => dispatch({ type: 'SET_TAB', payload: t.key }),
     bg: st.tab === t.key ? '#fff' : 'transparent',
-    color: st.tab === t.key ? '#16331f' : '#6a8273',
-    shadow: st.tab === t.key ? '0 2px 6px -2px rgba(0,0,0,.18)' : 'none',
+    color: st.tab === t.key ? '#0f172a' : '#64748b',
+    shadow: st.tab === t.key ? '0 1px 3px rgba(0,0,0,.1)' : 'none',
   }));
 
   const first = new Date(st.calY, st.calM, 1);
@@ -168,7 +177,7 @@ export function computeDerived(st: AppState, go: (r: string) => void, openPokja:
   while (cells.length % 7 !== 0) cells.push({ dim: true });
 
   const calCells = cells.map(c => {
-    if (c.dim) return { day: '', bg: '#fafcf9', border: '#f0f4ef', numColor: '#ccc', cursor: 'default', onClick: () => {}, events: [], minH: isMob ? '48px' : '96px' };
+    if (c.dim) return { day: '', bg: '#f8fafc', border: '#f1f5f9', numColor: '#ccc', cursor: 'default', onClick: () => {}, events: [], minH: isMob ? '48px' : '96px' };
     const dayNum = c.day!;
     const isToday = today.getFullYear() === st.calY && today.getMonth() === st.calM && today.getDate() === dayNum;
     const dayEvents = st.events.filter(e => e.pokja === st.activePokja && e.y === st.calY && e.m === st.calM && e.d === dayNum).map(e => ({
@@ -177,8 +186,8 @@ export function computeDerived(st: AppState, go: (r: string) => void, openPokja:
       onDelete: (ev: React.MouseEvent) => { ev.stopPropagation(); dispatch({ type: 'DELETE_EVENT', payload: e.id }); },
     }));
     return {
-      day: dayNum, bg: isToday ? '#eaf6ed' : '#fff', border: isToday ? active.accent : '#eef3ec',
-      numColor: isToday ? active.accent : '#3a4f42', cursor: canEditActive ? 'pointer' : 'default',
+      day: dayNum, bg: isToday ? '#eef2ff' : '#fff', border: isToday ? active.accent : '#e2e8f0',
+      numColor: isToday ? active.accent : '#334155', cursor: canEditActive ? 'pointer' : 'default',
       onClick: canEditActive ? () => dispatch({ type: 'SET_EVENT_MODAL', payload: { day: dayNum, title: '', time: '' } }) : () => {},
       events: dayEvents, minH: isMob ? '48px' : '96px',
     };
@@ -201,13 +210,13 @@ export function computeDerived(st: AppState, go: (r: string) => void, openPokja:
   const galFilterDef = [{ id: 'all' as const, label: 'Semua' }, ...POKJA.map(p => ({ id: p.id as number | 'all', label: p.name }))];
   const galFilters = galFilterDef.map(g => {
     const on = st.galFilter === g.id;
-    const acc = g.id === 'all' ? '#1f7e44' : POKJA.find(p => p.id === g.id)!.accent;
-    return { label: g.label, onClick: () => dispatch({ type: 'SET_GAL_FILTER', payload: g.id }), bg: on ? acc : '#fff', color: on ? '#fff' : '#5d7263', border: on ? acc : '#dde7df' };
+    const acc = g.id === 'all' ? '#1e3a5f' : POKJA.find(p => p.id === g.id)!.accent;
+    return { label: g.label, onClick: () => dispatch({ type: 'SET_GAL_FILTER', payload: g.id }), bg: on ? acc : '#fff', color: on ? '#fff' : '#475569', border: on ? acc : '#e2e8f0' };
   });
 
   const allPhotos = st.gallery.filter(g => st.galFilter === 'all' || g.pokja === st.galFilter).map(g => {
     const p = POKJA.find(x => x.id === g.pokja)!;
-    return { caption: g.caption, date: g.date, tag: g.tag, image: g.image, pokjaName: p.name, accent: p.accent };
+    return { id: g.id, caption: g.caption, date: g.date, tag: g.tag, image: g.image, pokjaName: p.name, accent: p.accent };
   });
 
   const userPokjaName = u && u.role !== 'admin' && u.pokja ? POKJA.find(p => p.id === u.pokja)!.name : null;
@@ -245,28 +254,31 @@ export function computeDerived(st: AppState, go: (r: string) => void, openPokja:
   const isAdmin = !!(u && u.role === 'admin');
   const scopeIds = isAdmin ? [1, 2, 3, 4] : (u && u.pokja ? [u.pokja] : []);
   const dashStats = [
-    { value: st.events.filter(e => scopeIds.includes(e.pokja)).length, label: isAdmin ? 'Total kegiatan' : 'Kegiatan pokja Anda', accent: '#2c9a55' },
-    { value: st.files.filter(f => scopeIds.includes(f.pokja)).length, label: isAdmin ? 'Total berkas' : 'Berkas pokja Anda', accent: '#3d7fd6' },
-    { value: visibleReports.filter(r => r.status === 'Baru').length, label: 'Laporan baru', accent: '#d05c84' },
+    { value: st.events.filter(e => scopeIds.includes(e.pokja)).length, label: isAdmin ? 'Total kegiatan' : 'Kegiatan pokja Anda', accent: '#2563eb' },
+    { value: st.files.filter(f => scopeIds.includes(f.pokja)).length, label: isAdmin ? 'Total berkas' : 'Berkas pokja Anda', accent: '#7c3aed' },
+    { value: visibleReports.filter(r => r.status === 'Baru').length, label: 'Laporan baru', accent: '#ef4444' },
   ];
 
   const quickActions = [
-    { glyph: '◷', title: 'Kelola Kalender', desc: 'Tambah/hapus kegiatan', accent: '#2c9a55', tint: '#e3f3e8', onClick: () => { openPokja(scopeIds[0] || 1); } },
-    { glyph: '▦', title: 'Kelola Galeri', desc: 'Unggah dokumentasi', accent: '#3d7fd6', tint: '#e6effb', onClick: () => { openPokja(scopeIds[0] || 1); setTimeout(() => dispatch({ type: 'SET_TAB', payload: 'galeri' }), 0); } },
-    { glyph: '⬓', title: 'Kelola Berkas', desc: 'Unggah & unduh dokumen', accent: '#d9952f', tint: '#fbf1de', onClick: () => { openPokja(scopeIds[0] || 1); setTimeout(() => dispatch({ type: 'SET_TAB', payload: 'berkas' }), 0); } },
-    { glyph: '✎', title: 'Tindak Lanjut Laporan', desc: 'Ubah status & export', accent: '#d05c84', tint: '#fbe7ee', onClick: () => go('laporan') },
+    { glyph: '◷', title: 'Kelola Kalender', desc: 'Tambah/hapus kegiatan', accent: '#2563eb', tint: '#eff6ff', onClick: () => { openPokja(scopeIds[0] || 1); } },
+    { glyph: '▦', title: 'Kelola Galeri', desc: 'Unggah dokumentasi', accent: '#7c3aed', tint: '#f3e8ff', onClick: () => { if (isAdmin) { go('galeri'); } else { openPokja(scopeIds[0] || 1); setTimeout(() => dispatch({ type: 'SET_TAB', payload: 'galeri' }), 0); } } },
+    { glyph: '⬓', title: 'Kelola Berkas', desc: 'Unggah & unduh dokumen', accent: '#ea580c', tint: '#fff7ed', onClick: () => { openPokja(scopeIds[0] || 1); setTimeout(() => dispatch({ type: 'SET_TAB', payload: 'berkas' }), 0); } },
+    { glyph: '✎', title: 'Tindak Lanjut Laporan', desc: 'Ubah status & export', accent: '#0891b2', tint: '#ecfeff', onClick: () => go('laporan') },
+    { glyph: '▤', title: 'Kelola Inventaris', desc: 'Data barang inventaris', accent: '#059669', tint: '#ecfdf5', onClick: () => go('inventaris') },
+    { glyph: '✉', title: 'Kelola Surat', desc: 'Surat masuk & keluar', accent: '#d97706', tint: '#fffbeb', onClick: () => go('surat') },
+    { glyph: '📢', title: 'Pengumuman', desc: 'Informasi & pengumuman', accent: '#059669', tint: '#ecfdf5', onClick: () => go('pengumuman') },
   ];
 
-  const roleBgMap: Record<string, string> = { admin: '#e3f3e8', ketua: '#e6effb', anggota: '#fbf1de' };
-  const roleColorMap: Record<string, string> = { admin: '#1f7e44', ketua: '#3d7fd6', anggota: '#d9952f' };
+  const roleBgMap: Record<string, string> = { admin: '#e0e7ff', ketua: '#f3e8ff', anggota: '#fffbeb' };
+  const roleColorMap: Record<string, string> = { admin: '#1e3a5f', ketua: '#7c3aed', anggota: '#f59e0b' };
   const allUsers = st.users.map((usr, i) => ({
     id: usr.id, name: usr.name, nikMasked: usr.nik.slice(0, 4) + '·····' + usr.nik.slice(-3),
     roleLabel: rlabel(usr), pokjaName: usr.pokja ? POKJA.find(p => p.id === usr.pokja)!.name : '—',
     initial: rinit(usr), accent: raccent(usr),
     avatarStyle: makeAvatarStyle(usr.avatar, raccent(usr), '28px', '10px', rinit(usr)),
     avatarInitial: usr.avatar ? '' : rinit(usr),
-    roleBg: roleBgMap[usr.role] || '#f0f4ef', roleColor: roleColorMap[usr.role] || '#5d7263',
-    rowBg: i % 2 ? '#fafcf9' : '#fff', canDelete: usr.id !== st.currentUserId,
+    roleBg: roleBgMap[usr.role] || '#f1f5f9', roleColor: roleColorMap[usr.role] || '#475569',
+    rowBg: i % 2 ? '#f8fafc' : '#fff', canDelete: usr.id !== st.currentUserId,
     onEdit: () => dispatch({ type: 'SET_USER_MODAL', payload: { mode: 'edit', editId: usr.id, form: { nik: usr.nik, name: usr.name, password: '', role: usr.role, pokja: String(usr.pokja || '1') }, error: '' } }),
     onDelete: () => dispatch({ type: 'SET_CONFIRM_DELETE', payload: { userId: usr.id } }),
   }));
@@ -281,10 +293,53 @@ export function computeDerived(st: AppState, go: (r: string) => void, openPokja:
     : [];
 
   const pkkMembers = (st.pkkMembers || []).map((m, i) => ({
-    id: m.id, name: m.name, nikMasked: m.nik.slice(0, 4) + '·····' + m.nik.slice(-3),
-    pokjaName: POKJA.find(p => p.id === m.pokja)?.name || '—',
-    position: m.position, address: m.address, phone: m.phone,
-    rowBg: i % 2 ? '#fafcf9' : '#fff',
+    id: m.id, name: m.name,
+    nikMasked: m.nik ? m.nik.slice(0, 4) + '·····' + m.nik.slice(-3) : '',
+    pokjaName: m.pokja ? POKJA.find(p => p.id === m.pokja)?.name || '—' : '—',
+    position: m.position, address: m.address, phone: m.phone || '',
+    gender: m.gender || '', birth_place: m.birth_place || '',
+    birth_date: m.birth_date || '', marital_status: m.marital_status || '',
+    education: m.education || '', occupation: m.occupation || '',
+    membership_status: m.membership_status || '',
+    rowBg: i % 2 ? '#f8fafc' : '#fff',
+  }));
+
+  function flattenTree(items: any[]): any[] {
+    const result: any[] = [];
+    for (const m of items) {
+      result.push({
+        id: m.id, nama_barang: m.nama_barang, asal_barang: m.asal_barang || '',
+        jumlah: m.jumlah || 0, tempat_penyimpanan: m.tempat_penyimpanan || '',
+        kondisi_barang: m.kondisi_barang || '',
+        hasChildren: !!(m.children && m.children.length),
+      });
+      if (m.children) result.push(...flattenTree(m.children));
+    }
+    return result;
+  }
+  const inventory = flattenTree(st.inventory || []);
+
+  const suratMasuk = (st.surat || []).filter(s => s.type === 'masuk').map((m, i) => ({
+    id: m.id, type: m.type,
+    tanggal_terima: m.tanggal_terima || '',
+    tanggal_surat: m.tanggal_surat || '',
+    nomor_surat: m.nomor_surat || '',
+    asal_surat_dari: m.asal_surat_dari || '',
+    perihal: m.perihal || '',
+    lampiran: m.lampiran || '',
+    diteruskan_kepada: m.diteruskan_kepada || '',
+    rowBg: i % 2 ? '#f8fafc' : '#fff',
+  }));
+  const suratKeluar = (st.surat || []).filter(s => s.type === 'keluar').map((m, i) => ({
+    id: m.id, type: m.type,
+    tanggal_terima: m.tanggal_terima || '',
+    tanggal_surat: m.tanggal_surat || '',
+    nomor_surat: m.nomor_surat || '',
+    asal_surat_dari: m.asal_surat_dari || '',
+    perihal: m.perihal || '',
+    lampiran: m.lampiran || '',
+    diteruskan_kepada: m.diteruskan_kepada || '',
+    rowBg: i % 2 ? '#f8fafc' : '#fff',
   }));
 
   const um = st.userModal;
@@ -306,7 +361,7 @@ export function computeDerived(st: AppState, go: (r: string) => void, openPokja:
   } else if (u && u.avatar) {
     avDisplayStyle = { width: '100px', height: '100px', borderRadius: '50%', backgroundImage: `url('${u.avatar}')`, backgroundSize: 'cover', backgroundPosition: 'center' };
   } else {
-    const avAcc = u ? raccent(u) : '#2c9a55';
+    const avAcc = u ? raccent(u) : '#2563eb';
     avDisplayStyle = { width: '100px', height: '100px', borderRadius: '50%', background: avAcc, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '36px', fontWeight: '800', color: '#fff' };
     avDisplayInitial = u ? rinit(u) : '?';
   }
@@ -326,6 +381,6 @@ export function computeDerived(st: AppState, go: (r: string) => void, openPokja:
     u, active, canEditActive, isMob, isDesktop, rs,
     heroCurrent, heroDots, userVals, nav, pokjas, features, tabs, cal,
     pokjaPhotos, pokjaFiles, galFilters, allPhotos, reportGroups,
-    dashStats, quickActions, allUsers, pokjaMemberList, pkkMembers, blogPosts: st.blogPosts, umV, avM, cdUser, lf, demoAccounts, fileModalV, eventModal,
+    dashStats, quickActions, allUsers, pokjaMemberList, pkkMembers, inventory, suratMasuk, suratKeluar, suratView: st.suratView, blogPosts: st.blogPosts, orgPositions: st.orgPositions, pengumuman: st.pengumuman, umV, avM, cdUser, lf, demoAccounts, fileModalV, eventModal,
   };
 }

@@ -50,11 +50,49 @@ export interface FileItem {
 export interface PKKMember {
   id: string | number;
   name: string;
-  nik: string;
-  pokja: number;
   position: string;
+  gender: string;
+  birth_place: string;
+  birth_date: string;
+  marital_status: string;
   address: string;
-  phone: string;
+  education: string;
+  occupation: string;
+  membership_status: string;
+  nik?: string;
+  pokja?: number | null;
+  phone?: string;
+}
+
+export interface SuratItem {
+  id: string | number;
+  type: 'masuk' | 'keluar';
+  tanggal_terima: string;
+  tanggal_surat: string;
+  nomor_surat: string;
+  asal_surat_dari: string;
+  perihal: string;
+  lampiran: string;
+  diteruskan_kepada: string;
+}
+
+export interface InventoryItem {
+  id: string | number;
+  nama_barang: string;
+  asal_barang: string;
+  jumlah: number;
+  tempat_penyimpanan: string;
+  kondisi_barang: string;
+  children?: InventoryItem[];
+}
+
+export interface OrgPosition {
+  id: number;
+  section: string;
+  role: string;
+  name: string;
+  title: string;
+  sort_order: number;
 }
 
 export interface BlogPost {
@@ -66,6 +104,7 @@ export interface BlogPost {
   date: string;
   category: string;
   image?: string | null;
+  created_at?: string;
 }
 
 export interface ReportItem {
@@ -76,6 +115,15 @@ export interface ReportItem {
   pokja: string;
   desc: string;
   status: string;
+}
+
+export interface PengumumanItem {
+  id: string | number;
+  image: string;
+  caption: string;
+  expires_at: string;
+  created_at: string;
+  created_by: string;
 }
 
 export interface AppState {
@@ -103,6 +151,11 @@ export interface AppState {
     error: string;
   } | null;
   confirmDelete: { userId: string } | null;
+  postModal: {
+    mode: 'add' | 'edit';
+    editId: string | number | null;
+    form: { title: string; excerpt: string; content: string; category: string };
+  } | null;
   galFilter: number | 'all';
   rf: { name: string; contact: string; category: string; desc: string };
   toast: string | null;
@@ -112,6 +165,10 @@ export interface AppState {
   files: FileItem[];
   reports: ReportItem[];
   pkkMembers: PKKMember[];
+  inventory: InventoryItem[];
+  orgPositions: OrgPosition[];
+  pengumuman: PengumumanItem[];
+  viewingPost: BlogPost | null;
 }
 
 export type AppAction =
@@ -154,6 +211,26 @@ export type AppAction =
   | { type: 'ADD_REPORT'; payload: ReportItem }
   | { type: 'UPDATE_REPORT_STATUS'; payload: string | number }
   | { type: 'SET_NEXT_ID'; payload: number }
-  | { type: 'SET_INITIAL_DATA'; payload: { users: User[]; events: CalendarEvent[]; gallery: GalleryItem[]; files: FileItem[]; reports: ReportItem[]; pkkMembers: PKKMember[]; blogPosts: BlogPost[] } }
+  | { type: 'SET_INITIAL_DATA'; payload: { users: User[]; events: CalendarEvent[]; gallery: GalleryItem[]; files: FileItem[]; reports: ReportItem[]; pkkMembers: PKKMember[]; inventory: InventoryItem[]; blogPosts: BlogPost[]; orgPositions: OrgPosition[]; pengumuman: PengumumanItem[] } }
+  | { type: 'SET_ORG_POSITIONS'; payload: OrgPosition[] }
+  | { type: 'SET_POST_MODAL'; payload: AppState['postModal'] }
+  | { type: 'SET_POST_FORM'; payload: Partial<{ title: string; excerpt: string; content: string; category: string }> }
+  | { type: 'SET_BLOG_POSTS'; payload: BlogPost[] }
+  | { type: 'ADD_BLOG_POST'; payload: BlogPost }
+  | { type: 'UPDATE_BLOG_POST'; payload: BlogPost }
+  | { type: 'DELETE_BLOG_POST'; payload: string | number }
+  | { type: 'SET_VIEWING_POST'; payload: BlogPost | null }
+  | { type: 'ADD_PKK_MEMBER'; payload: PKKMember }
+  | { type: 'UPDATE_PKK_MEMBER'; payload: PKKMember }
+  | { type: 'DELETE_PKK_MEMBER'; payload: string | number }
+  | { type: 'SET_INVENTORY'; payload: InventoryItem[] }
+  | { type: 'ADD_INVENTORY'; payload: InventoryItem }
+  | { type: 'UPDATE_INVENTORY'; payload: InventoryItem }
+  | { type: 'DELETE_INVENTORY'; payload: string | number }
+  | { type: 'ADD_INVENTORY_CHILD'; payload: { parentId: string | number; item: InventoryItem } }
+  | { type: 'SET_PENGUMUMAN'; payload: PengumumanItem[] }
+  | { type: 'ADD_PENGUMUMAN'; payload: PengumumanItem }
+  | { type: 'UPDATE_PENGUMUMAN'; payload: PengumumanItem }
+  | { type: 'DELETE_PENGUMUMAN'; payload: string | number }
   | { type: 'SET_TOAST'; payload: string | null };
 
